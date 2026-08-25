@@ -317,20 +317,30 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
 - ✅ Admin skeleton `/admin`: đếm hàng đợi (review pending, claims, user_created, reports)
 - ✅ Dev server chạy cổng **4000** (`npm run dev`); seed demo 4 GV LPS + 1 opportunity
   (`supabase/seed_demo.sql`) để xem UI — data giả, có thể xóa khi import dữ liệu thật
+- ✅ **Import 36 giảng viên LPS THẬT** (crawled từ khctnv.ftu.edu.vn + law.ftu.edu.vn,
+  full tiểu sử; script crawl tại `%TEMP%\opencode\crawl-lps\`; data seed
+  `supabase/seed_lps_real.sql` idempotent). Demo data đã xóa.
+  ⚠️ Lưu ý: user chốt giữ **1 đơn vị LPS** dù 2 website là Khoa Luật và Khoa KHCT&NV riêng biệt
+- ✅ Migration 0005: storage policies bucket `student-cards` (upload/read own folder,
+  staff read all) + RPC `submit_student_card`
+- ✅ Migration 0006: RPC `list_applicants` (GV xem ứng viên của mình)
+- ✅ Flow thẻ SV: `/verify` upload ảnh → `card_pending` → admin duyệt ở `/admin`
+- ✅ Admin dashboard đầy đủ: duyệt review pending, claims GV (approve set owner+role),
+  thẻ SV (signed URL), reports
+- ✅ `/me`: lịch sử review của SV (kèm trạng thái duyệt)
+- ✅ `/opportunities`: sinh viên browse + apply tin cơ hội (filter theo loại);
+  GV thấy danh sách ứng viên trong `/prof/slots`
 - ⬜ Việc đầu sau khi đăng ký user đầu tiên — promote thành admin:
   `update public.profiles set role='admin' where id='<user-id>';`
 - Git repo: https://github.com/vominhngoc147/ProfCheck (private)
 
 ## 7. Việc cần làm tiếp (next actions)
 
-1. Import/seed giảng viên LPS THẬT (demo data hiện là giả — xóa bằng
-   `delete from professors where source_status='seed' and slug in (...)`)
-2. Admin dashboard chi tiết: duyệt review pending, duyệt claims GV, quản lý reports;
-   trang applications cho GV xem ứng viên
-3. Flow xác thực SV bằng upload thẻ SV (storage private + queue admin)
-4. Trang `/me` lịch sử review của sinh viên; UI browse opportunities phía SV (`/opportunities`)
-5. Deploy Vercel (env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-   `NEXT_PUBLIC_SITE_URL`; nhớ set port/URL Google OAuth redirect)
+1. Deploy Vercel qua CLI (user chạy `vercel login`, sau đó deploy + set env vars)
+2. Cấu hình Supabase Auth: thêm redirect URLs (localhost:4000 + domain Vercel)
+   cho Google OAuth
+3. Right-of-reply cho GV (Phase 3), AI summary, recommend SV↔GV theo tags/research_interests
+4. Report review UI (nút report trên review → insert vào bảng reports)
 
 ## 8. Quy ước làm việc cho session sau
 

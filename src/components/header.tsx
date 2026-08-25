@@ -24,6 +24,22 @@ export async function Header() {
           <span className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600 text-white">P</span>
           {dict.common.appName}
         </Link>
+        <nav className="hidden items-center gap-1 text-sm md:flex">
+          <Link
+            href="/opportunities"
+            className="rounded-full px-3 py-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          >
+            {dict.common.opportunities}
+          </Link>
+          {user && (
+            <Link
+              href="/me"
+              className="rounded-full px-3 py-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            >
+              {dict.common.myReviews}
+            </Link>
+          )}
+        </nav>
         <div className="flex items-center gap-3">
           <LocaleSwitcher current={locale} />
           {user ? (

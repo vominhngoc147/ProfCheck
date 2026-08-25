@@ -22,10 +22,24 @@ export default async function ProfSlotsPage() {
   const { data: opportunities } = await supabase
     .from("opportunities")
     .select(
-      "id, type, title, description, tags, slots_total, slots_left, deadline, status, applications(count)"
+      "id, type, title, description, tags, slots_total, slots_left, deadline, status"
     )
     .eq("professor_id", professor.id)
     .order("created_at", { ascending: false });
+
+  // load applicants per opportunity via security-definer RPC
+  const applicantMap = new Map<string, {
+    student_name: string;
+    message: string | null;
+    status: string;
+    created_at: string;
+  }[]>();
+  for (const o of opportunities ?? []) {
+    const { data: apps } = await supabase.rpc("list_applicants", {
+      p_opportunity_id: o.id,
+    });
+    if (apps && apps.length > 0) applicantMap.set(o.id, apps);
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -43,12 +57,9 @@ export default async function ProfSlotsPage() {
             </p>
           )}
           {(opportunities ?? []).map((o) => {
-            const appCount =
-              Array.isArray(o.applications) && o.applications[0]
-                ? (o.applications[0] as { count: number }).count
-                : 0;
             const typeKey =
               TYPE_LABEL_KEYS[o.type as keyof typeof TYPE_LABEL_KEYS];
+            const applicants = applicantMap.get(o.id) ?? [];
             return (
               <article
                 key={o.id}
@@ -77,7 +88,7 @@ export default async function ProfSlotsPage() {
                       total: o.slots_total,
                     })}
                     {" · "}
-                    {`${dict.profDash.applications}: ${appCount}`}
+                    {`${dict.profDash.applications}: ${applicants.length}`}
                   </span>
                 </div>
                 <h3 className="mt-2 font-medium">{o.title}</h3>
@@ -109,6 +120,33 @@ export default async function ProfSlotsPage() {
                     }}
                   />
                 </div>
+
+                {applicants.length > 0 && (
+                  <details className="mt-3 rounded-lg bg-zinc-50 p-3 dark:bg-zinc-900">
+                    <summary className="cursor-pointer text-xs font-medium">
+                      {`${dict.profDash.applicantsList} (${applicants.length})`}
+                    </summary>
+                    <ul className="mt-2 flex flex-col gap-2">
+                      {applicants.map((a, i) => (
+                        <li
+                          key={i}
+                          className="rounded-md border border-zinc-200 p-2 text-xs dark:border-zinc-700"
+                        >
+                          <b>{a.student_name}</b>
+                          <span className="ml-2 text-zinc-500">
+                            ({a.status} ·{" "}
+                            {new Date(a.created_at).toLocaleDateString()})
+                          </span>
+                          {a.message && (
+                            <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+                              {a.message}
+                            </p>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
               </article>
             );
           })}
