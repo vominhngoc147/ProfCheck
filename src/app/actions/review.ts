@@ -23,12 +23,16 @@ export async function submitReviewAction(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("verification")
+    .select("verification, role")
     .eq("id", user.id)
     .single();
 
   if (!profile || profile.verification === "none")
     return { status: "error", error: "not_verified" };
+
+  // D10: professors cannot review other professors
+  if (profile.role === "professor")
+    return { status: "error", error: "professor_blocked" };
 
   const ratingOverall = Number(formData.get("rating_overall"));
   const ratingDifficulty = Number(formData.get("rating_difficulty"));

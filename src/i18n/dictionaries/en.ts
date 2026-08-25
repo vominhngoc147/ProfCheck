@@ -90,6 +90,8 @@ const en: typeof vi = {
       "You have already reviewed this professor. One review per professor per user.",
     ratingRequired: "Please select all three ratings.",
     contentTooShort: "Content must be at least 30 characters.",
+    professorBlocked:
+      "Professor accounts cannot write reviews about colleagues.",
   },
   auth: {
     loginTitle: "Log in",
@@ -121,6 +123,72 @@ const en: typeof vi = {
     disclaimer:
       "ProfCheck is an independent student-built platform. Reviews reflect personal opinions of their authors.",
     forStudents: "For students",
+    forProfessors: "For professors",
+  },
+  onboarding: {
+    ctaTitle: "Are you a professor?",
+    ctaDesc:
+      "Create your profile or claim ownership of an existing one to manage your info and post research/thesis/internship opportunities.",
+    ctaButton: "Register professor profile",
+    searchTitle: "Find your profile",
+    searchPlaceholder: "Enter professor name...",
+    searchButton: "Search",
+    notFound: "No matching profile found.",
+    createInstead: "Not there? Create a new profile",
+    claimButton: "This is me — Claim ownership",
+    evidenceLabel:
+      "Evidence link (school email, appointment decision...) — not needed if you use a school-domain email",
+    fullName: "Full name",
+    academicTitle: "Academic title (PhD, MSc, Assoc. Prof...)",
+    facultyLabel: "Faculty / school",
+    bioLabel: "Short bio",
+    researchInterests: "Research interests (comma-separated)",
+    submitCreate: "Create profile",
+    resultApproved:
+      "Verified! The profile now belongs to you (school-domain email).",
+    resultPending:
+      "Request sent. Your email is not on the school domain, so an admin will review it manually soon.",
+    alreadyOwned: "You already own this profile.",
+    nameRequired: "Please enter your name (at least 3 characters).",
+  },
+  profDash: {
+    title: "Professor dashboard",
+    navOverview: "Overview",
+    noProfessor:
+      "You are not linked to any professor profile on ProfCheck yet.",
+    noProfessorCta: "Create or claim your profile",
+    statsReviews: "Reviews received",
+    recentReviews: "Recent reviews about you",
+    editProfile: "Edit profile",
+    manageSlots: "Manage opportunities",
+    viewPublic: "View public page",
+    saved: "Saved!",
+    notVerifiedNote:
+      "Unverified profiles cannot be edited yet. Please complete verification first.",
+    opportunitiesTitle: "Student opportunities",
+    newOpportunity: "Add opportunity",
+    oppType: "Type",
+    typeNckh: "Research project",
+    typeKltn: "Undergraduate thesis",
+    typeLuanVan: "Master's thesis",
+    typeThucTap: "Internship",
+    typeKhac: "Other",
+    oppTitle: "Title",
+    oppDesc: "Description of requirements and content",
+    oppTags: "Tags / keywords (comma-separated)",
+    oppSlots: "Slots",
+    oppDeadline: "Deadline (optional)",
+    statusOpen: "Open",
+    statusClosed: "Closed",
+    closeOpp: "Close",
+    reopenOpp: "Reopen",
+    deleteOpp: "Delete",
+    slotsLeft: "{left}/{total} slots left",
+    noOpportunities:
+      "No opportunities yet. Post your first one so students can find you!",
+    applications: "Applicants",
+    invalidInput: "Please check the title and slot count.",
+    backToDash: "← Back to dashboard",
   },
 };
 

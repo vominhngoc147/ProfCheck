@@ -43,6 +43,10 @@ Project đã được scaffold tại thư mục gốc của repo (`profcheck/`).
 | D6 | 2026-08-26 | GV tự tạo profile | **Cho phép** giảng viên tự tạo profile. Profile tự tạo đánh dấu trạng thái `unverified` hiển thị nhãn "Chờ xác minh" đến khi GV claim/xác thực (email trường hoặc bằng chứng bổ nhiệm). Admin có quyền gỡ/sửa nếu sai |
 | D7 | 2026-08-26 | Ẩn danh review + moderation | Reviewer **chọn** ẩn danh hoặc hiện tên. **Moderation hybrid**: mọi review (public + anonymous) publish NGAY nếu pass filter tự động (toxicity/PII/name-mention — Phase đầu dùng từ khóa đơn giản, sau nâng cấp AI); chỉ nội dung nghi vấn mới vào queue admin. Minh bạch bằng: chỉ verified SV được viết, GV có right-of-reply (Phase 3+), hiển thị full phân phối sao. Điểm số cấu trúc không bao giờ bị gỡ khi text bị gỡ (giống triết lý RMP) |
 | D8 | 2026-08-26 | Nghiên cứu RMP | RMP không pre-moderation (publish ngay, duyệt reactive qua auto-filter + community report), không verify sinh viên. Bài học: lợi thế ProfCheck = verify SV bắt buộc (lớp lọc nguồn mạnh nhất) → publish nhanh mà vẫn an toàn hơn RMP |
+| D9 | 2026-08-26 | GV là first-class user | Chiến lược dữ liệu **claim-first**: nguồn chính = GV tự tạo tài khoản + tự quản hồ sơ (data mạng thường lỗi thời/sai sót). Seed chỉ là điểm khởi đầu khi có data công khai tốt; hồ sơ claimed override seed. UI tách theo vai trò bằng Route Groups: `(public)` khách+SV, `(professor)/prof/*` dashboard GV, `(admin)/admin/*` admin. Guard bằng `src/lib/auth.ts` (`getProfile`, `requireRole`) ở layout |
+| D10 | 2026-08-26 | Cấm GV review GV | Giảng viên (role='professor') KHÔNG được viết review về GV khác (tránh xung đột lợi ích đồng nghiệp). Chặn ở server action; sau thêm RLS/trigger |
+| D11 | 2026-08-26 | Xác minh claim GV hybrid | Claim/tạo profile GV: email thuộc `edu_domains` của trường → **auto-approve** (`claimed` + set `owner_profile_id` + role 'professor'); email khác → upload bằng chứng, **admin duyệt**. Nhất quán với flow SV (D4) |
+| D12 | 2026-08-26 | Kết nối SV–GV Phase 3 | Mô hình "Opportunities": GV đăng tin cơ hội (`opportunities`: nckh/kltn/luan_van/thuc_tap/khac, tags, slots, deadline) → SV apply (`applications`). Recommend giai đoạn sau: match tags/lĩnh vực SV ↔ `research_interests` GV (keyword trước, AI sau). Schema tạo sẵn từ migration 0003, UI làm Phase 3 |
 
 Mọi quyết định mới thêm vào bảng này với số tăng dần.
 
@@ -300,16 +304,33 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
 - ✅ Auth pages: `/login`, `/signup`, Google OAuth + email/password, callback `/auth/callback`
 - ✅ `/verify`: trang stub xác thực SV (edu auto / thẻ SV coming soon)
 - ✅ Build production pass, eslint sạch, smoke test 200 trên `/`, `/search`, `/login`
+- ✅ **D9-D12 đã chốt & triển khai**: GV là first-class user (claim-first), tách UI theo
+  Route Groups `(public)` / `prof/*` / `(admin)/admin`, chặn GV review GV,
+  claim hybrid (edu auto-pass / admin duyệt), schema opportunities + applications
+- ✅ Migration 0003 (role 'professor', opportunities/applications + RLS + trigger giảm slot)
+  và 0004 (hàm `submit_professor_claim` security-definer, guard chống tự sửa role/verification)
+  đã chạy thành công qua pooler
+- ✅ Onboarding GV `/join/professor` (tìm hồ sơ → claim; tạo mới → user_created + claim),
+  auto-approve nếu email thuộc edu_domains
+- ✅ Dashboard `/prof`: tổng quan (điểm, review về mình), `/prof/profile` sửa hồ sơ
+  (chỉ khi claimed), `/prof/slots` quản lý opportunities (thêm/đóng/mở/xóa)
+- ✅ Admin skeleton `/admin`: đếm hàng đợi (review pending, claims, user_created, reports)
+- ✅ Dev server chạy cổng **4000** (`npm run dev`); seed demo 4 GV LPS + 1 opportunity
+  (`supabase/seed_demo.sql`) để xem UI — data giả, có thể xóa khi import dữ liệu thật
 - ⬜ Việc đầu sau khi đăng ký user đầu tiên — promote thành admin:
   `update public.profiles set role='admin' where id='<user-id>';`
-- Git repo đã init bên trong `./profcheck`
+- Git repo: https://github.com/vominhngoc147/ProfCheck (private)
 
 ## 7. Việc cần làm tiếp (next actions)
 
-1. Seed thêm giảng viên LPS (import/crawl từ website trường) để UI có data thật
-2. Flow xác thực SV bằng upload thẻ SV (storage private + queue admin)
-3. Admin dashboard `/admin`: duyệt review pending, thẻ SV, reports, claims
-4. Deploy Vercel (thêm env `NEXT_PUBLIC_SITE_URL`)
+1. Import/seed giảng viên LPS THẬT (demo data hiện là giả — xóa bằng
+   `delete from professors where source_status='seed' and slug in (...)`)
+2. Admin dashboard chi tiết: duyệt review pending, duyệt claims GV, quản lý reports;
+   trang applications cho GV xem ứng viên
+3. Flow xác thực SV bằng upload thẻ SV (storage private + queue admin)
+4. Trang `/me` lịch sử review của sinh viên; UI browse opportunities phía SV (`/opportunities`)
+5. Deploy Vercel (env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
+   `NEXT_PUBLIC_SITE_URL`; nhớ set port/URL Google OAuth redirect)
 
 ## 8. Quy ước làm việc cho session sau
 

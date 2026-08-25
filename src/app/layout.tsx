@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Header, Footer } from "@/components/header";
-import { getDictionary, getLocale } from "@/i18n";
+import { getLocale } from "@/i18n";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,7 +24,6 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
-  const dict = await getDictionary();
 
   return (
     <html
@@ -33,9 +31,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-white font-sans text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer disclaimer={dict.footer.disclaimer} />
+        {children}
       </body>
     </html>
   );

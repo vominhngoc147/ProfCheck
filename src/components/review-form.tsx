@@ -29,6 +29,7 @@ type ReviewDict = {
   alreadyReviewed: string;
   ratingRequired: string;
   contentTooShort: string;
+  professorBlocked: string;
 };
 
 function StarInput({
@@ -116,7 +117,9 @@ export function ReviewForm({
         ? dict.alreadyReviewed
         : state.error === "content_short"
           ? dict.contentTooShort
-          : dict.ratingRequired
+          : state.error === "professor_blocked"
+            ? dict.professorBlocked
+            : dict.ratingRequired
       : null;
 
   return (
