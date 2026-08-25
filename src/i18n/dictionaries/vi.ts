@@ -1,0 +1,125 @@
+const vi = {
+  common: {
+    appName: "ProfCheck",
+    tagline: "Đánh giá giảng viên dành cho sinh viên",
+    search: "Tìm kiếm",
+    home: "Trang chủ",
+    login: "Đăng nhập",
+    signup: "Đăng ký",
+    logout: "Đăng xuất",
+    language: "Ngôn ngữ",
+    loading: "Đang tải...",
+    error: "Có lỗi xảy ra. Vui lòng thử lại.",
+    cancel: "Hủy",
+    save: "Lưu",
+    back: "Quay lại",
+    verifyAccount: "Xác thực tài khoản",
+  },
+  home: {
+    heroTitle: "Đánh giá giảng viên — chọn đúng người hướng dẫn",
+    heroSubtitle:
+      "Sinh viên đánh giá thật về giảng viên: dạy hay, chấm công bằng, có đáng chọn làm người hướng dẫn NCKH/khóa luận không.",
+    searchPlaceholder: "Tìm tên giảng viên, học phần...",
+    browseByFaculty: "Xem theo khoa / trường thành viên",
+    professors: "giảng viên",
+    reviews: "đánh giá",
+    howItWorksTitle: "Nó hoạt động thế nào?",
+    step1Title: "Xác thực sinh viên",
+    step1Desc:
+      "Email tên miền .edu được duyệt tự động. Không có edu? Gửi ảnh thẻ SV để admin duyệt.",
+    step2Title: "Viết đánh giá",
+    step2Desc:
+      "Chấm điểm, viết nhận xét, chọn ẩn danh hoặc công khai. Nội dung hợp lệ sẽ đăng ngay.",
+    step3Title: "Chọn giảng viên thông minh",
+    step3Desc:
+      "Xem điểm trung bình, phân phối sao, độ khó và độ công bằng trước khi đăng ký.",
+    verifiedOnlyNote: "Chỉ sinh viên đã xác thực mới được viết đánh giá.",
+  },
+  search: {
+    title: "Kết quả tìm kiếm",
+    resultsFor: 'Kết quả cho "{q}"',
+    noResults: 'Không tìm thấy giảng viên nào cho "{q}".',
+    emptyQuery: "Nhập từ khóa để tìm giảng viên.",
+    resultCount: "{count} kết quả",
+  },
+  professor: {
+    unverifiedLabel: "Chờ xác minh",
+    avgOverall: "Điểm tổng",
+    difficulty: "Độ khó",
+    fairness: "Công bằng",
+    wouldTakeAgain: "Sẽ chọn lại",
+    starDistribution: "Phân phối sao",
+    reviewsSection: "Đánh giá",
+    writeReview: "Viết đánh giá",
+    editYourReview: "Sửa đánh giá của bạn",
+    noReviews: "Chưa có đánh giá nào. Hãy là người đầu tiên!",
+    anonymousAuthor: "Ẩn danh",
+    yes: "Có",
+    no: "Không",
+    notRated: "Chưa đủ dữ liệu",
+    reviewCount: "{count} đánh giá",
+    ofStudentsWouldTakeAgain: "{pct}% sinh viên sẽ chọn lại",
+    levelOfDifficulty: "Mức độ khó: {level}",
+    easy: "Dễ",
+    moderate: "Vừa",
+    hard: "Khó",
+  },
+  reviewForm: {
+    title: "Viết đánh giá",
+    overallRating: "Điểm tổng thể",
+    difficultyRating: "Độ khó (1 = dễ, 5 = rất khó)",
+    fairnessRating: "Độ công bằng khi chấm điểm",
+    wouldTakeAgain: "Bạn có chọn lại giảng viên này không?",
+    anonymous: "Đăng với tư cách ẩn danh",
+    anonymousHint: "Tên bạn sẽ không hiển thị công khai.",
+    contentLabel: "Nội dung đánh giá",
+    contentPlaceholder:
+      "Chia sẻ trải nghiệm của bạn: phong cách dạy, cách chấm điểm, thái độ hỗ trợ sinh viên... (tối thiểu 30 ký tự)",
+    submit: "Gửi đánh giá",
+    submitting: "Đang gửi...",
+    loginRequired: "Bạn cần đăng nhập để viết đánh giá.",
+    goToLogin: "Đăng nhập ngay",
+    notVerified:
+      "Tài khoản của bạn chưa được xác thực sinh viên. Chỉ sinh viên đã xác thực mới có thể viết đánh giá.",
+    goVerify: "Xác thực ngay",
+    successPending:
+      "Đã gửi đánh giá! Đánh giá đang chờ kiểm duyệt và sẽ hiển thị sớm.",
+    alreadyReviewed:
+      "Bạn đã đánh giá giảng viên này rồi. Mỗi người chỉ được 1 đánh giá mỗi giảng viên.",
+    ratingRequired: "Vui lòng chọn đủ cả 3 mức điểm.",
+    contentTooShort: "Nội dung phải có ít nhất 30 ký tự.",
+  },
+  auth: {
+    loginTitle: "Đăng nhập",
+    loginSubtitle: "Đăng nhập để viết đánh giá và tham gia cộng đồng.",
+    signupTitle: "Tạo tài khoản",
+    signupSubtitle:
+      "Đăng ký bằng email .edu của trường để được xác thực sinh viên tự động.",
+    email: "Email",
+    password: "Mật khẩu",
+    displayName: "Tên hiển thị",
+    googleLogin: "Tiếp tục với Google",
+    or: "hoặc",
+    emailLogin: "Đăng nhập bằng email",
+    emailSignup: "Đăng ký bằng email",
+    haveAccount: "Đã có tài khoản?",
+    needAccount: "Chưa có tài khoản?",
+    registeredNotice:
+      "Đăng ký thành công! Hãy kiểm tra email để xác nhận tài khoản trước khi đăng nhập.",
+    invalidCredentials: "Email hoặc mật khẩu không đúng.",
+    signupFailed: "Không thể tạo tài khoản. Email có thể đã tồn tại.",
+    callbackError: "Đăng nhập thất bại. Vui lòng thử lại.",
+    verificationBannerTitle: "Tài khoản chưa xác thực",
+    verificationBannerEdu:
+      "Nếu dùng email tên miền .edu của trường, tài khoản sẽ được xác thực tự động khi đăng ký.",
+    verificationBannerCard:
+      "Không có email .edu? Tính năng gửi ảnh thẻ sinh viên sắp ra mắt.",
+  },
+  footer: {
+    disclaimer:
+      "ProfCheck là nền tảng độc lập do sinh viên xây dựng. Mọi đánh giá phản ánh quan điểm cá nhân của người viết.",
+    forStudents: "Cho sinh viên",
+  },
+};
+
+export default vi;

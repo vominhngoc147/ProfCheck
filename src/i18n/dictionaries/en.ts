@@ -1,0 +1,127 @@
+import type vi from "./vi";
+
+const en: typeof vi = {
+  common: {
+    appName: "ProfCheck",
+    tagline: "Professor reviews by students, for students",
+    search: "Search",
+    home: "Home",
+    login: "Log in",
+    signup: "Sign up",
+    logout: "Log out",
+    language: "Language",
+    loading: "Loading...",
+    error: "Something went wrong. Please try again.",
+    cancel: "Cancel",
+    save: "Save",
+    back: "Back",
+    verifyAccount: "Verify account",
+  },
+  home: {
+    heroTitle: "Rate professors — pick the right advisor",
+    heroSubtitle:
+      "Real student reviews of professors: teaching quality, fair grading, and whether they're worth choosing for research / thesis supervision.",
+    searchPlaceholder: "Search professor or course...",
+    browseByFaculty: "Browse by school / faculty",
+    professors: "professors",
+    reviews: "reviews",
+    howItWorksTitle: "How it works",
+    step1Title: "Verified students only",
+    step1Desc:
+      ".edu email addresses are auto-approved. No edu email? Upload your student card for manual review.",
+    step2Title: "Write a review",
+    step2Desc:
+      "Rate, write your experience, choose anonymous or public. Clean content publishes instantly.",
+    step3Title: "Choose smart",
+    step3Desc:
+      "See average scores, star distribution, difficulty and fairness before you enroll.",
+    verifiedOnlyNote: "Only verified students can write reviews.",
+  },
+  search: {
+    title: "Search results",
+    resultsFor: 'Results for "{q}"',
+    noResults: 'No professors found for "{q}".',
+    emptyQuery: "Enter a keyword to search for professors.",
+    resultCount: "{count} results",
+  },
+  professor: {
+    unverifiedLabel: "Pending verification",
+    avgOverall: "Overall",
+    difficulty: "Difficulty",
+    fairness: "Fairness",
+    wouldTakeAgain: "Would take again",
+    starDistribution: "Star distribution",
+    reviewsSection: "Reviews",
+    writeReview: "Write a review",
+    editYourReview: "Edit your review",
+    noReviews: "No reviews yet. Be the first!",
+    anonymousAuthor: "Anonymous",
+    yes: "Yes",
+    no: "No",
+    notRated: "Not enough data",
+    reviewCount: "{count} reviews",
+    ofStudentsWouldTakeAgain: "{pct}% of students would take again",
+    levelOfDifficulty: "Level of difficulty: {level}",
+    easy: "Easy",
+    moderate: "Moderate",
+    hard: "Hard",
+  },
+  reviewForm: {
+    title: "Write a review",
+    overallRating: "Overall rating",
+    difficultyRating: "Difficulty (1 = easy, 5 = very hard)",
+    fairnessRating: "Grading fairness",
+    wouldTakeAgain: "Would you take this professor again?",
+    anonymous: "Post as anonymous",
+    anonymousHint: "Your name will not be shown publicly.",
+    contentLabel: "Review content",
+    contentPlaceholder:
+      "Share your experience: teaching style, grading, support for students... (minimum 30 characters)",
+    submit: "Submit review",
+    submitting: "Submitting...",
+    loginRequired: "You must be logged in to write a review.",
+    goToLogin: "Log in now",
+    notVerified:
+      "Your account is not verified as a student yet. Only verified students can write reviews.",
+    goVerify: "Verify now",
+    successPending:
+      "Review submitted! It is pending moderation and will appear soon.",
+    alreadyReviewed:
+      "You have already reviewed this professor. One review per professor per user.",
+    ratingRequired: "Please select all three ratings.",
+    contentTooShort: "Content must be at least 30 characters.",
+  },
+  auth: {
+    loginTitle: "Log in",
+    loginSubtitle: "Log in to write reviews and join the community.",
+    signupTitle: "Create account",
+    signupSubtitle:
+      "Sign up with your school .edu email for automatic student verification.",
+    email: "Email",
+    password: "Password",
+    displayName: "Display name",
+    googleLogin: "Continue with Google",
+    or: "or",
+    emailLogin: "Log in with email",
+    emailSignup: "Sign up with email",
+    haveAccount: "Already have an account?",
+    needAccount: "Need an account?",
+    registeredNotice:
+      "Sign-up successful! Check your email to confirm your account before logging in.",
+    invalidCredentials: "Incorrect email or password.",
+    signupFailed: "Could not create the account. The email may already exist.",
+    callbackError: "Login failed. Please try again.",
+    verificationBannerTitle: "Account not verified",
+    verificationBannerEdu:
+      "If you sign up with a school .edu email, verification happens automatically.",
+    verificationBannerCard:
+      "No .edu email? Student card upload is coming soon.",
+  },
+  footer: {
+    disclaimer:
+      "ProfCheck is an independent student-built platform. Reviews reflect personal opinions of their authors.",
+    forStudents: "For students",
+  },
+};
+
+export default en;
