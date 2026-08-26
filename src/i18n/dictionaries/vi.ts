@@ -95,6 +95,13 @@ const vi = {
     contentTooShort: "Nội dung phải có ít nhất 30 ký tự.",
     professorBlocked:
       "Tài khoản giảng viên không thể viết đánh giá về đồng nghiệp.",
+    step1: "Xếp hạng",
+    step2: "Chi tiết",
+    step3: "Nhận xét",
+    next: "Tiếp tục",
+    back: "Quay lại",
+    courseCode: "Mã lớp / học phần",
+    courseCodePlaceholder: "VD: LIN1501 · CLC · Nhóm 3 (tùy chọn)",
   },
   auth: {
     loginTitle: "Đăng nhập",

@@ -87,7 +87,10 @@ export default async function Home() {
       {/* HERO */}
       <section className="grid items-center gap-10 py-16 lg:grid-cols-2 lg:py-24">
         <div>
-          <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+          <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+            🎓 {locale === "en" && schoolData?.data?.name_en ? schoolData.data.name_en : schoolData?.data?.name_vi}
+          </p>
+          <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
             {dict.home.heroTitle}
           </h1>
           <p className="mt-4 max-w-lg text-base text-zinc-600 dark:text-zinc-400">
@@ -176,7 +179,10 @@ export default async function Home() {
 
       {/* FACULTIES */}
       <section className="py-8">
-        <h2 className="section-title mb-5">{dict.home.browseByFaculty}</h2>
+        <h2 className="section-title mb-1">{dict.home.browseByFaculty}</h2>
+        <p className="mb-5 text-sm text-zinc-500 dark:text-zinc-400">
+          {locale === "en" && schoolData?.data?.name_en ? schoolData.data.name_en : schoolData?.data?.name_vi}
+        </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {(faculties ?? []).map((faculty, i) => (
             <Link

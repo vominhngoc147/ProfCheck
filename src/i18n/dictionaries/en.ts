@@ -97,6 +97,13 @@ const en: typeof vi = {
     contentTooShort: "Content must be at least 30 characters.",
     professorBlocked:
       "Professor accounts cannot write reviews about colleagues.",
+    step1: "Rate",
+    step2: "Details",
+    step3: "Comment",
+    next: "Continue",
+    back: "Back",
+    courseCode: "Class / course code",
+    courseCodePlaceholder: "e.g. LIN1501 · Section 3 (optional)",
   },
   auth: {
     loginTitle: "Log in",

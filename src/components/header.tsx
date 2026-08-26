@@ -52,6 +52,14 @@ export async function Header() {
                   {dict.profDash.title}
                 </Link>
               )}
+              {(profile?.role === "admin" || profile?.role === "moderator") && (
+                <Link
+                  href="/admin"
+                  className="rounded-full px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 dark:text-rose-300 dark:hover:bg-rose-950/40"
+                >
+                  Admin
+                </Link>
+              )}
               <span className="hidden max-w-[160px] truncate text-sm text-zinc-600 sm:inline dark:text-zinc-400">
                 {user.email}
               </span>

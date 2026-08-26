@@ -22,6 +22,7 @@ type PublicReview = {
   author_name: string | null;
   content: string;
   tags: string[] | null;
+  course_code: string | null;
   created_at: string;
 };
 
@@ -56,7 +57,7 @@ export default async function ProfessorPage({
       supabase
         .from("public_reviews")
         .select(
-          "id, rating_overall, rating_difficulty, rating_fairness, rating_clarity, attendance_required, textbook_used, for_credit, would_take_again, is_anonymous, author_name, content, tags, created_at"
+          "id, rating_overall, rating_difficulty, rating_fairness, rating_clarity, attendance_required, textbook_used, for_credit, would_take_again, is_anonymous, author_name, content, tags, course_code, created_at"
         )
         .eq("professor_id", professor.id)
         .eq("status", "approved")
@@ -94,6 +95,16 @@ export default async function ProfessorPage({
       : "ok";
 
   const reviewList = (reviews ?? []) as PublicReview[];
+
+  // top tags across approved reviews (RMP-style popular tags)
+  const tagCounts = new Map<string, number>();
+  for (const r of reviewList) {
+    for (const t of r.tags ?? []) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+  }
+  const topTags = [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6);
+
   const distribution = [1, 2, 3, 4, 5].map((star) => ({
     star,
     count: reviewList.filter((r) => r.rating_overall === star).length,
@@ -201,6 +212,25 @@ export default async function ProfessorPage({
               ))}
             </div>
           </div>
+
+          {topTags.length > 0 && (
+            <div>
+              <p className="mb-1.5 text-sm font-medium">
+                💬 {dict.reviewForm.tagsLabel}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {topTags.map(([t, n]) => (
+                  <span
+                    key={t}
+                    className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                  >
+                    {dict.tags[t as keyof typeof dict.tags] ?? t}{" "}
+                    <span className="text-zinc-400">({n})</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -220,6 +250,15 @@ export default async function ProfessorPage({
             ...dict.reviewExtra,
             tagsLabel: dict.tags.label,
             tagLabels: dict.tags,
+          }}
+          wdict={{
+            step1: dict.reviewForm.step1,
+            step2: dict.reviewForm.step2,
+            step3: dict.reviewForm.step3,
+            next: dict.reviewForm.next,
+            back: dict.reviewForm.back,
+            courseCode: dict.reviewForm.courseCode,
+            courseCodePlaceholder: dict.reviewForm.courseCodePlaceholder,
           }}
           authState={authState}
         />
@@ -256,6 +295,13 @@ export default async function ProfessorPage({
               <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
                 {review.content}
               </p>
+              {review.course_code && (
+                <p className="mt-2">
+                  <span className="badge bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
+                    📘 {review.course_code}
+                  </span>
+                </p>
+              )}
               {Array.isArray(review.tags) && review.tags.length > 0 && (
                 <p className="mt-2 flex flex-wrap gap-1.5">
                   {(review.tags as string[]).map((t) => (
