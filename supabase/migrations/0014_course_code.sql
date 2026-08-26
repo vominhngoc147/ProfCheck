@@ -8,8 +8,10 @@ grant select (course_code) on public.reviews to anon;
 grant insert (course_code) on public.reviews to authenticated;
 
 -- keep the public view in sync with new columns
-create or replace view public.public_reviews
-with (security_invoker = true) as
+-- (drop+create because column set/order changed)
+drop view if exists public.public_reviews;
+create view public.public_reviews
+with (security_invoker = false) as
 select
   r.id, r.professor_id, r.course_id, r.is_anonymous,
   r.rating_overall, r.rating_difficulty, r.rating_fairness, r.rating_clarity,
@@ -20,4 +22,7 @@ select
   case when r.is_anonymous then null else pr.display_name end as author_name,
   case when r.is_anonymous then null else pr.avatar_url end as author_avatar
 from public.reviews r
-join public.profiles pr on pr.id = r.author_id;
+join public.profiles pr on pr.id = r.author_id
+where r.status = 'approved';
+
+grant select on public.public_reviews to anon, authenticated;

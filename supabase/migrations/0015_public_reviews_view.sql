@@ -1,9 +1,9 @@
--- Migration 0015: make public_reviews work again + stricter
--- Runs as owner (no security_invoker) so column grants don't break it,
--- and bakes in status='approved' so pending/rejected content NEVER leaks
--- regardless of how the view is queried. Anonymous authors stay null.
+-- Migration 0015: public_reviews = owner-security + approved-only filter.
+-- Final definition (identical to 0014's; kept as separate idempotent step
+-- in case 0014 ran before this hardening existed).
 
-create or replace view public.public_reviews
+drop view if exists public.public_reviews;
+create view public.public_reviews
 with (security_invoker = false) as
 select
   r.id, r.professor_id, r.course_id, r.is_anonymous,
