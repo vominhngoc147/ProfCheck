@@ -75,7 +75,8 @@ const en: typeof vi = {
     fairnessRating: "Grading fairness",
     wouldTakeAgain: "Would you take this professor again?",
     anonymous: "Post as anonymous",
-    anonymousHint: "Your name will not be shown publicly.",
+    anonymousHint:
+      "Truly anonymous: your identity is never shown anywhere, not even via the API. Sender info is stored privately only for anti-spam (1 review/professor) and abuse handling.",
     contentLabel: "Review content",
     contentPlaceholder:
       "Share your experience: teaching style, grading, support for students... (minimum 30 characters)",
@@ -87,7 +88,9 @@ const en: typeof vi = {
       "Your account is not verified as a student yet. Only verified students can write reviews.",
     goVerify: "Verify now",
     successPending:
-      "Review submitted! It is pending moderation and will appear soon.",
+      "Submitted! Your review needs extra screening and is pending moderation.",
+    successPublished:
+      "Published! Thanks for sharing your experience.",
     alreadyReviewed:
       "You have already reviewed this professor. One review per professor per user.",
     ratingRequired: "Please select all three ratings.",

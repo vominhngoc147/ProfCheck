@@ -8,7 +8,7 @@ import { REVIEW_TAG_KEYS } from "@/lib/tags";
 type ReviewFormState =
   | { status: "idle" }
   | { status: "error"; error: string }
-  | { status: "success" };
+  | { status: "success"; published: boolean };
 
 type ReviewDict = {
   title: string;
@@ -27,6 +27,7 @@ type ReviewDict = {
   notVerified: string;
   goVerify: string;
   successPending: string;
+  successPublished: string;
   alreadyReviewed: string;
   ratingRequired: string;
   contentTooShort: string;
@@ -125,8 +126,14 @@ export function ReviewForm({
 
   if (state.status === "success")
     return (
-      <div className="rounded-xl border border-emerald-300 bg-emerald-50 p-6 text-center text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">
-        {dict.successPending}
+      <div
+        className={`rounded-xl border p-6 text-center ${
+          state.published
+            ? "border-emerald-300 bg-emerald-50 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
+            : "border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-200"
+        }`}
+      >
+        {state.published ? dict.successPublished : dict.successPending}
       </div>
     );
 

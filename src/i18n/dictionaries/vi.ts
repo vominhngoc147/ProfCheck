@@ -73,7 +73,8 @@ const vi = {
     fairnessRating: "Độ công bằng khi chấm điểm",
     wouldTakeAgain: "Bạn có chọn lại giảng viên này không?",
     anonymous: "Đăng với tư cách ẩn danh",
-    anonymousHint: "Tên bạn sẽ không hiển thị công khai.",
+    anonymousHint:
+      "Ẩn danh tuyệt đối: hệ thống không hiển thị danh tính ở bất kỳ đâu, kể cả qua API. Thông tin người gửi chỉ được lưu nội bộ để chống spam (1 đánh giá/GV) và xử lý vi phạm.",
     contentLabel: "Nội dung đánh giá",
     contentPlaceholder:
       "Chia sẻ trải nghiệm của bạn: phong cách dạy, cách chấm điểm, thái độ hỗ trợ sinh viên... (tối thiểu 30 ký tự)",
@@ -85,7 +86,9 @@ const vi = {
       "Tài khoản của bạn chưa được xác thực sinh viên. Chỉ sinh viên đã xác thực mới có thể viết đánh giá.",
     goVerify: "Xác thực ngay",
     successPending:
-      "Đã gửi đánh giá! Đánh giá đang chờ kiểm duyệt và sẽ hiển thị sớm.",
+      "Đã gửi đánh giá! Nội dung cần rà soát thêm nên đang chờ kiểm duyệt.",
+    successPublished:
+      "Đã đăng công khai! Cảm ơn bạn đã chia sẻ trải nghiệm.",
     alreadyReviewed:
       "Bạn đã đánh giá giảng viên này rồi. Mỗi người chỉ được 1 đánh giá mỗi giảng viên.",
     ratingRequired: "Vui lòng chọn đủ cả 3 mức điểm.",

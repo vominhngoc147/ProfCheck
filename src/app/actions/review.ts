@@ -7,7 +7,7 @@ import { REVIEW_TAG_KEYS } from "@/lib/tags";
 export type ReviewFormState =
   | { status: "idle" }
   | { status: "error"; error: string }
-  | { status: "success" };
+  | { status: "success"; published: boolean };
 
 export async function submitReviewAction(
   _prev: unknown,
@@ -106,7 +106,7 @@ export async function submitReviewAction(
   }
 
   revalidatePath(`/professors/${professorSlug}`);
-  return { status: "success" };
+  return { status: "success", published: !needsModeration };
 }
 
 export type SimpleResult = { ok: boolean; error?: string };
@@ -153,21 +153,24 @@ export async function updateMyReviewAction(
 
   const { data: review } = await supabase
     .from("reviews")
-    .select("author_id, created_at")
+    .select("created_at")
     .eq("id", reviewId)
     .single();
-  if (!review || review.author_id !== user.id)
-    return { ok: false, error: "not_owner" };
+  if (!review) return { ok: false, error: "not_owner" };
   if (Date.now() - new Date(review.created_at).getTime() > EDIT_WINDOW_MS)
     return { ok: false, error: "edit_window_over" };
 
-  const { error } = await supabase
+  // RLS (rev_update_own) ensures the row belongs to the caller
+  const { data: updated, error } = await supabase
     .from("reviews")
     .update({ content: trimmed, status: "pending", updated_at: new Date().toISOString() })
-    .eq("id", reviewId);
-  if (error) return { ok: false, error: "generic" };
+    .eq("id", reviewId)
+    .select("id");
+  if (error || !updated || updated.length === 0)
+    return { ok: false, error: "not_owner" };
 
   revalidatePath("/me");
+  revalidatePath("/prof");
   return { ok: true };
 }
 
@@ -178,16 +181,14 @@ export async function deleteMyReviewAction(reviewId: string): Promise<SimpleResu
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "login_required" };
 
-  const { data: review } = await supabase
+  // RLS (rev_delete_own_or_admin) restricts deletion to own rows
+  const { data: deleted, error } = await supabase
     .from("reviews")
-    .select("author_id")
+    .delete()
     .eq("id", reviewId)
-    .single();
-  if (!review || review.author_id !== user.id)
-    return { ok: false, error: "not_owner" };
-
-  const { error } = await supabase.from("reviews").delete().eq("id", reviewId);
+    .select("id");
   if (error) return { ok: false, error: "generic" };
+  if (!deleted || deleted.length === 0) return { ok: false, error: "not_owner" };
 
   revalidatePath("/me");
   return { ok: true };
