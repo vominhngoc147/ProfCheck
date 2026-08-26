@@ -1,4 +1,4 @@
-# ProfCheck — Project Context & Master Plan
+﻿# ProfCheck — Project Context & Master Plan
 
 > **LƯU Ý CHO AI/DEV SESSION MỚI:** Đọc toàn bộ file này TRƯỚC khi làm bất cứ việc gì.
 > File này là nguồn sự thật duy nhất (single source of truth) về mục tiêu, quyết định,
@@ -330,15 +330,13 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
 - ✅ `/me`: lịch sử review của SV (kèm trạng thái duyệt)
 - ✅ `/opportunities`: sinh viên browse + apply tin cơ hội (filter theo loại);
   GV thấy danh sách ứng viên trong `/prof/slots`
-- ✅ **DEPLOYED PRODUCTION**: https://profcheck-chi.vercel.app
-  (project Vercel `vominhngoc147/profcheck`; "-chi" là suffix ngẫu nhiên Vercel gán vì
-  profcheck.vercel.app đã có người dùng — muốn đổi thành tên khác, vào Vercel Dashboard
-  → Settings → Domains → edit domain .vercel.app. Alias thủ công KHÔNG public được do
-  Deployment Protection).
+- ✅ **DEPLOYED PRODUCTION**: https://profcheckvn.vercel.app
+  (project Vercel `vominhngoc147/profcheck`; user đã đổi domain từ suffix "-chi" thành
+  `profcheckvn`. Deploy qua CLI; GitHub auto-deploy xem mục Git connect bên dưới).
   Lưu ý: GitHub auto-connect chưa xong — private repo cần cấp quyền Vercel App trên GitHub,
   hiện deploy bằng CLI `vercel deploy --prod`)
 - ⬜ Cần làm thủ công: Supabase Dashboard → Authentication → URL Configuration:
-  thêm `https://profcheck-chi.vercel.app/auth/callback` vào Redirect URLs (và Site URL)
+  thêm `https://profcheckvn.vercel.app/auth/callback` vào Redirect URLs (và Site URL)
   để Google OAuth chạy trên production
 - ⬜ Việc đầu sau khi đăng ký user đầu tiên — promote thành admin:
   `update public.profiles set role='admin' where id='<user-id>';`
