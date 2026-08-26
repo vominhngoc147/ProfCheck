@@ -18,7 +18,7 @@ const vi = {
     myReviews: "Đánh giá của tôi",
   },
   home: {
-    heroTitle: "Đánh giá giảng viên — chọn đúng người hướng dẫn",
+    heroTitle: "Đánh giá giảng viên để chọn đúng người hướng dẫn",
     heroSubtitle:
       "Sinh viên đánh giá thật về giảng viên: dạy hay, chấm công bằng, có đáng chọn làm người hướng dẫn NCKH/khóa luận không.",
     searchPlaceholder: "Tìm tên giảng viên, học phần...",
@@ -135,9 +135,9 @@ const vi = {
     searchButton: "Tìm kiếm",
     notFound: "Không tìm thấy hồ sơ nào phù hợp.",
     createInstead: "Không có? Tạo hồ sơ mới",
-    claimButton: "Đây là tôi — Nhận sở hữu",
+    claimButton: "Đây là tôi, nhận sở hữu hồ sơ này",
     evidenceLabel:
-      "Liên kết bằng chứng (email trường, quyết định bổ nhiệm...) — không cần nếu bạn dùng email tên miền trường",
+      "Liên kết bằng chứng (email trường, quyết định bổ nhiệm...). Không cần nếu bạn dùng email tên miền trường",
     fullName: "Họ và tên",
     academicTitle: "Học hàm, học vị (TS, ThS, PGS...)",
     facultyLabel: "Khoa / trường thành viên",
@@ -229,7 +229,8 @@ const vi = {
   },
   opp: {
     title: "Cơ hội từ giảng viên",
-    subtitle: "NCKH, khóa luận, luận văn, thực tập — tìm GV hướng dẫn phù hợp.",
+    subtitle:
+      "Tìm giảng viên hướng dẫn NCKH, khóa luận, luận văn và thực tập phù hợp.",
     filterAll: "Tất cả",
     apply: "Ứng tuyển",
     applied: "Đã gửi ứng tuyển!",

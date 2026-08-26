@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "ProfCheck — Đánh giá giảng viên cho sinh viên",
+    default: "ProfCheck | Đánh giá giảng viên cho sinh viên",
     template: "%s | ProfCheck",
   },
   description:

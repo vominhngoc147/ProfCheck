@@ -331,8 +331,10 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
 - ✅ `/opportunities`: sinh viên browse + apply tin cơ hội (filter theo loại);
   GV thấy danh sách ứng viên trong `/prof/slots`
 - ✅ **DEPLOYED PRODUCTION**: https://profcheck-chi.vercel.app
-  (project Vercel `vominhngoc147/profcheck`, env vars `NEXT_PUBLIC_SUPABASE_URL` +
-  `NEXT_PUBLIC_SUPABASE_ANON_KEY` đã set cho production; deploy qua Vercel CLI.
+  (project Vercel `vominhngoc147/profcheck`; "-chi" là suffix ngẫu nhiên Vercel gán vì
+  profcheck.vercel.app đã có người dùng — muốn đổi thành tên khác, vào Vercel Dashboard
+  → Settings → Domains → edit domain .vercel.app. Alias thủ công KHÔNG public được do
+  Deployment Protection).
   Lưu ý: GitHub auto-connect chưa xong — private repo cần cấp quyền Vercel App trên GitHub,
   hiện deploy bằng CLI `vercel deploy --prod`)
 - ⬜ Cần làm thủ công: Supabase Dashboard → Authentication → URL Configuration:

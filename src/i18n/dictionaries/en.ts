@@ -20,7 +20,7 @@ const en: typeof vi = {
     myReviews: "My reviews",
   },
   home: {
-    heroTitle: "Rate professors — pick the right advisor",
+    heroTitle: "Rate professors and pick the right advisor",
     heroSubtitle:
       "Real student reviews of professors: teaching quality, fair grading, and whether they're worth choosing for research / thesis supervision.",
     searchPlaceholder: "Search professor or course...",
@@ -137,9 +137,9 @@ const en: typeof vi = {
     searchButton: "Search",
     notFound: "No matching profile found.",
     createInstead: "Not there? Create a new profile",
-    claimButton: "This is me — Claim ownership",
+    claimButton: "This is me, claim ownership",
     evidenceLabel:
-      "Evidence link (school email, appointment decision...) — not needed if you use a school-domain email",
+      "Evidence link (school email, appointment decision...). Not needed if you use a school-domain email",
     fullName: "Full name",
     academicTitle: "Academic title (PhD, MSc, Assoc. Prof...)",
     facultyLabel: "Faculty / school",
@@ -233,7 +233,7 @@ const en: typeof vi = {
   opp: {
     title: "Opportunities from professors",
     subtitle:
-      "Research, thesis, master's, internships — find the right supervisor.",
+      "Research, thesis and internship opportunities from professors. Find the right supervisor.",
     filterAll: "All",
     apply: "Apply",
     applied: "Application sent!",
