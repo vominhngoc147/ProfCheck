@@ -47,15 +47,20 @@ export async function signupAction(
 
 export async function googleLoginAction(): Promise<void> {
   const headerList = await headers();
-  const origin = headerList.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL;
+  const origin =
+    headerList.get("origin") ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "https://profcheckvn.vercel.app";
   const supabase = await createClient();
-  await supabase.auth.signInWithOAuth({
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
       redirectTo: `${origin}/auth/callback`,
       queryParams: { prompt: "select_account" },
     },
   });
+  if (error) redirect("/login?error=auth");
+  if (data?.url) redirect(data.url);
 }
 
 export async function signOutAction(): Promise<void> {
