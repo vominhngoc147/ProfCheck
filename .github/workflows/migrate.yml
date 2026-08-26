@@ -1,0 +1,22 @@
+name: Migrate Supabase
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "supabase/migrations/**"
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Apply pending migrations
+        env:
+          SUPABASE_DB_POOLER: ${{ secrets.SUPABASE_DB_POOLER }}
+        run: node scripts/migrate.mjs

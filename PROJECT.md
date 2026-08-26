@@ -344,10 +344,20 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
 
 ## 7. Việc cần làm tiếp (next actions)
 
-1. Cấu hình Google OAuth redirect trong Supabase Dashboard (xem ⬜ phía trên) + tạo Google Cloud OAuth credentials nếu chưa có
-2. Kết nối GitHub repo với Vercel project (grant Vercel App access cho private repo) để auto-deploy mỗi lần push
-3. Right-of-reply cho GV, AI summary review, recommend SV↔GV theo tags/research_interests
-4. Report review UI (nút report trên từng review → insert reports)
+1. Right-of-reply cho GV, AI summary review, recommend SV↔GV theo tags/research_interests
+2. Report review UI (nút report trên từng review → insert reports)
+3. Custom domain riêng (hiện dùng vercel.app subdomain)
+
+### CI/CD (đã setup 2026-08-26)
+- **GitHub ↔ Vercel connected**: push lên `master` → auto-deploy production
+- **GitHub Actions** `.github/workflows/migrate.yml`: push thay đổi trong
+  `supabase/migrations/**` → tự chạy `scripts/migrate.mjs` qua secret
+  `SUPABASE_DB_POOLER` (đã set trên repo). Runner theo dõi bảng `_migrations`,
+  chỉ chạy file mới, thực thi từng statement. **Quy tắc: migration mới = thêm file
+  SQL đánh số tăng dần vào `supabase/migrations/` rồi push — KHÔNG sửa file đã chạy,
+  KHÔNG cần chạy tay nữa.**
+- Lưu ý: guard role/verification (0001+0004) cho phép bypass khi session không có JWT
+  (migrations/admin trực tiếp), nhưng chặn mọi request app-level thường.
 
 ## 8. Quy ước làm việc cho session sau
 
