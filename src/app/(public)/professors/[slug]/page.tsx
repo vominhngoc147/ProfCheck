@@ -13,6 +13,10 @@ type PublicReview = {
   rating_overall: number;
   rating_difficulty: number;
   rating_fairness: number;
+  rating_clarity: number | null;
+  attendance_required: boolean | null;
+  textbook_used: boolean | null;
+  for_credit: boolean | null;
   would_take_again: boolean | null;
   is_anonymous: boolean;
   author_name: string | null;
@@ -39,7 +43,7 @@ export default async function ProfessorPage({
     .from("professors")
     .select(
       `id, slug, full_name, academic_title, bio, source_status,
-       review_count, avg_overall, avg_difficulty, avg_fairness, would_take_again_pct,
+       review_count, avg_overall, avg_difficulty, avg_fairness, avg_clarity, would_take_again_pct,
        faculty_id`
     )
     .eq("slug", slug)
@@ -52,7 +56,7 @@ export default async function ProfessorPage({
       supabase
         .from("public_reviews")
         .select(
-          "id, rating_overall, rating_difficulty, rating_fairness, would_take_again, is_anonymous, author_name, content, tags, created_at"
+          "id, rating_overall, rating_difficulty, rating_fairness, rating_clarity, attendance_required, textbook_used, for_credit, would_take_again, is_anonymous, author_name, content, tags, created_at"
         )
         .eq("professor_id", professor.id)
         .eq("status", "approved")
@@ -157,7 +161,7 @@ export default async function ProfessorPage({
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <ScoreBadge
               label={dict.professor.difficulty}
               value={
@@ -169,6 +173,10 @@ export default async function ProfessorPage({
             <ScoreBadge
               label={dict.professor.fairness}
               value={professor.avg_fairness?.toFixed(1) ?? dict.professor.notRated}
+            />
+            <ScoreBadge
+              label={dict.reviewExtra.clarityRating}
+              value={professor.avg_clarity?.toFixed(1) ?? dict.professor.notRated}
             />
             <ScoreBadge
               label={dict.professor.wouldTakeAgain}
@@ -207,7 +215,12 @@ export default async function ProfessorPage({
       <section className="mt-10 rounded-2xl border border-zinc-200 p-6 dark:border-zinc-700">
         <ReviewForm
           professorSlug={professor.slug}
-          dict={{ ...dict.reviewForm, tagsLabel: dict.tags.label, tagLabels: dict.tags }}
+          dict={{
+            ...dict.reviewForm,
+            ...dict.reviewExtra,
+            tagsLabel: dict.tags.label,
+            tagLabels: dict.tags,
+          }}
           authState={authState}
         />
       </section>
@@ -267,6 +280,11 @@ export default async function ProfessorPage({
               )}
               <div className="mt-3 flex items-center justify-between">
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+                  {review.rating_clarity !== null && (
+                    <span>
+                      {dict.reviewExtra.clarityRating}: {review.rating_clarity}/5
+                    </span>
+                  )}
                   <span>
                     {dict.professor.difficulty}: {review.rating_difficulty}/5
                   </span>
@@ -277,6 +295,24 @@ export default async function ProfessorPage({
                     <span>
                       {dict.professor.wouldTakeAgain}:{" "}
                       {review.would_take_again ? dict.professor.yes : dict.professor.no}
+                    </span>
+                  )}
+                  {review.attendance_required !== null && (
+                    <span>
+                      {dict.reviewExtra.attendanceLabel}{" "}
+                      {review.attendance_required ? dict.reviewExtra.yes : dict.reviewExtra.no}
+                    </span>
+                  )}
+                  {review.textbook_used !== null && (
+                    <span>
+                      {dict.reviewExtra.textbookLabel}{" "}
+                      {review.textbook_used ? dict.reviewExtra.yes : dict.reviewExtra.no}
+                    </span>
+                  )}
+                  {review.for_credit !== null && (
+                    <span>
+                      {dict.reviewExtra.creditLabel}{" "}
+                      {review.for_credit ? dict.reviewExtra.yes : dict.reviewExtra.no}
                     </span>
                   )}
                 </div>

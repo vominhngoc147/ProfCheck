@@ -33,6 +33,14 @@ type ReviewDict = {
   professorBlocked: string;
   tagsLabel: string;
   tagLabels: Record<string, string>;
+  clarityRating: string;
+  attendanceLabel: string;
+  textbookLabel: string;
+  creditLabel: string;
+  yes: string;
+  no: string;
+  unsure: string;
+  optionalNote: string;
 };
 
 function StarInput({
@@ -80,6 +88,7 @@ export function ReviewForm({
   const [overall, setOverall] = useState(0);
   const [difficulty, setDifficulty] = useState(0);
   const [fairness, setFairness] = useState(0);
+  const [clarity, setClarity] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   function toggleTag(tag: string) {
@@ -138,6 +147,7 @@ export function ReviewForm({
       <input type="hidden" name="rating_overall" value={overall || ""} />
       <input type="hidden" name="rating_difficulty" value={difficulty || ""} />
       <input type="hidden" name="rating_fairness" value={fairness || ""} />
+      <input type="hidden" name="rating_clarity" value={clarity || ""} />
 
       <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
         {dict.title}
@@ -146,11 +156,43 @@ export function ReviewForm({
       <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center sm:gap-x-6 sm:gap-y-3">
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{dict.overallRating}</span>
         <StarInput name="overall" value={overall} onChange={setOverall} />
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{dict.clarityRating}</span>
+        <StarInput name="clarity" value={clarity} onChange={setClarity} />
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{dict.difficultyRating}</span>
         <StarInput name="difficulty" value={difficulty} onChange={setDifficulty} />
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{dict.fairnessRating}</span>
         <StarInput name="fairness" value={fairness} onChange={setFairness} />
       </div>
+
+      <fieldset className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
+        <legend className="px-1 text-xs uppercase tracking-wide text-zinc-400">
+          {dict.optionalNote}
+        </legend>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {(
+            [
+              ["attendance_required", dict.attendanceLabel],
+              ["textbook_used", dict.textbookLabel],
+              ["for_credit", dict.creditLabel],
+            ] as const
+          ).map(([name, label]) => (
+            <div key={name}>
+              <p className="mb-1 text-xs font-medium text-zinc-600 dark:text-zinc-400">{label}</p>
+              <div className="flex gap-3 text-xs">
+                <label className="flex items-center gap-1">
+                  <input type="radio" name={name} value="yes" /> {dict.yes}
+                </label>
+                <label className="flex items-center gap-1">
+                  <input type="radio" name={name} value="no" /> {dict.no}
+                </label>
+                <label className="flex items-center gap-1">
+                  <input type="radio" name={name} value="" defaultChecked /> {dict.unsure}
+                </label>
+              </div>
+            </div>
+          ))}
+        </div>
+      </fieldset>
 
       <fieldset className="flex flex-wrap items-center gap-4">
         <legend className="w-full text-sm font-medium text-zinc-700 dark:text-zinc-300">

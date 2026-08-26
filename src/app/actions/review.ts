@@ -38,6 +38,8 @@ export async function submitReviewAction(
   const ratingOverall = Number(formData.get("rating_overall"));
   const ratingDifficulty = Number(formData.get("rating_difficulty"));
   const ratingFairness = Number(formData.get("rating_fairness"));
+  const ratingClarityRaw = formData.get("rating_clarity");
+  const ratingClarity = ratingClarityRaw ? Number(ratingClarityRaw) : null;
   const wouldTakeAgainRaw = formData.get("would_take_again");
   const isAnonymous = formData.get("is_anonymous") === "on";
   const content = String(formData.get("content") ?? "").trim();
@@ -45,11 +47,18 @@ export async function submitReviewAction(
   if (
     ![ratingOverall, ratingDifficulty, ratingFairness].every(
       (n) => Number.isInteger(n) && n >= 1 && n <= 5
-    )
+    ) ||
+    (ratingClarity !== null &&
+      !(Number.isInteger(ratingClarity) && ratingClarity >= 1 && ratingClarity <= 5))
   )
     return { status: "error", error: "rating_required" };
 
   if (content.length < 30) return { status: "error", error: "content_short" };
+
+  function triBool(name: string): boolean | null {
+    const v = formData.get(name);
+    return v === null || v === "" ? null : v === "yes";
+  }
 
   const { data: professor } = await supabase
     .from("professors")
@@ -75,6 +84,10 @@ export async function submitReviewAction(
     rating_overall: ratingOverall,
     rating_difficulty: ratingDifficulty,
     rating_fairness: ratingFairness,
+    rating_clarity: ratingClarity,
+    attendance_required: triBool("attendance_required"),
+    textbook_used: triBool("textbook_used"),
+    for_credit: triBool("for_credit"),
     would_take_again:
       wouldTakeAgainRaw === null ? null : wouldTakeAgainRaw === "yes",
     content,

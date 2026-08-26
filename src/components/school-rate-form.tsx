@@ -8,11 +8,23 @@ type Dict = {
   quality: string;
   social: string;
   facilities: string;
+  reputation: string;
+  location: string;
+  support: string;
   submitRating: string;
   ratingSaved: string;
   needVerifiedToRate: string;
   loginToRate: string;
 };
+
+const CRITERIA = [
+  ["quality", "quality"],
+  ["social", "social"],
+  ["facilities", "facilities"],
+  ["reputation", "reputation"],
+  ["location", "location"],
+  ["support", "support"],
+] as const;
 
 function StarRow({
   value,
@@ -49,9 +61,7 @@ export function SchoolRateForm({
   dict: Dict;
   authState: "logged_out" | "unverified" | "ok";
 }) {
-  const [quality, setQuality] = useState(0);
-  const [social, setSocial] = useState(0);
-  const [facilities, setFacilities] = useState(0);
+  const [scores, setScores] = useState<Record<string, number>>({});
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -78,30 +88,35 @@ export function SchoolRateForm({
 
   function submit() {
     startTransition(async () => {
-      const res = await rateSchoolAction(schoolId, quality, social, facilities);
+      const res = await rateSchoolAction(
+        schoolId,
+        scores.quality ?? 0,
+        scores.social ?? 0,
+        scores.facilities ?? 0,
+        scores.reputation ?? 0,
+        scores.location ?? 0,
+        scores.support ?? 0
+      );
       if (res.ok) setSaved(true);
     });
   }
 
-  const ready = quality > 0 && social > 0 && facilities > 0;
+  const ready = CRITERIA.every(([key]) => (scores[key] ?? 0) > 0);
 
   return (
     <form
       action={submit}
-      className="flex w-full flex-col gap-3 sm:w-auto sm:min-w-[280px]"
+      className="grid w-full gap-2 sm:min-w-[300px] sm:grid-cols-1"
     >
-      {(
-        [
-          ["quality", quality, setQuality],
-          ["social", social, setSocial],
-          ["facilities", facilities, setFacilities],
-        ] as const
-      ).map(([key, val, set]) => (
+      {CRITERIA.map(([key, labelKey]) => (
         <div key={key} className="flex items-center justify-between gap-4">
           <span className="text-sm text-zinc-600 dark:text-zinc-300">
-            {dict[key]}
+            {dict[labelKey]}
           </span>
-          <StarRow value={val} onChange={set} />
+          <StarRow
+            value={scores[key] ?? 0}
+            onChange={(v) => setScores((prev) => ({ ...prev, [key]: v }))}
+          />
         </div>
       ))}
       <button

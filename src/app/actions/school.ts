@@ -13,14 +13,17 @@ export async function rateSchoolAction(
   schoolId: string,
   quality: number,
   social: number,
-  facilities: number
+  facilities: number,
+  reputation: number,
+  location: number,
+  support: number
 ): Promise<SchoolRatingResult> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "login_required" };
-  if (![quality, social, facilities].every(valid))
+  if (![quality, social, facilities, reputation, location, support].every(valid))
     return { ok: false, error: "invalid" };
 
   const { data: profile } = await supabase
@@ -38,6 +41,9 @@ export async function rateSchoolAction(
       rating_quality: quality,
       rating_social: social,
       rating_facilities: facilities,
+      rating_reputation: reputation,
+      rating_location: location,
+      rating_support: support,
       updated_at: new Date().toISOString(),
     },
     { onConflict: "school_id,user_id" }

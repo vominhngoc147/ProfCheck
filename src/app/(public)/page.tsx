@@ -45,7 +45,7 @@ export default async function Home() {
       supabase
         .from("schools")
         .select(
-          "id, name_vi, name_en, school_ratings(rating_quality, rating_social, rating_facilities)"
+          "id, name_vi, name_en, school_ratings(rating_quality, rating_social, rating_facilities, rating_reputation, rating_location, rating_support)"
         )
         .eq("is_active", true)
         .limit(1)
@@ -259,6 +259,9 @@ export default async function Home() {
                     ["rating_quality", "avgQuality"],
                     ["rating_social", "avgSocial"],
                     ["rating_facilities", "avgFacilities"],
+                    ["rating_reputation", "avgReputation"],
+                    ["rating_location", "avgLocation"],
+                    ["rating_support", "avgSupport"],
                   ] as const
                 ).map(([col, label]) => {
                   const avg = ratingAvg(col);
