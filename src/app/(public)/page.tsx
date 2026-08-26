@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary, getLocale, interpolate } from "@/i18n";
 import { HeroIllustration, Icon } from "@/components/illustrations";
+import { SchoolRateForm } from "@/components/school-rate-form";
+import { getCurrentProfile } from "@/lib/auth";
 
 const AVATAR_COLORS = [
   "bg-indigo-500",
@@ -23,7 +25,7 @@ export default async function Home() {
   const locale = await getLocale();
   const supabase = await createClient();
 
-  const [{ data: faculties }, { data: professors }, reviewsCount] =
+  const [{ data: faculties }, { data: professors }, reviewsCount, schoolData] =
     await Promise.all([
       supabase
         .from("faculties")
@@ -40,7 +42,31 @@ export default async function Home() {
         .from("reviews")
         .select("id", { count: "exact", head: true })
         .eq("status", "approved"),
+      supabase
+        .from("schools")
+        .select(
+          "id, name_vi, name_en, school_ratings(rating_quality, rating_social, rating_facilities)"
+        )
+        .eq("is_active", true)
+        .limit(1)
+        .single(),
     ]);
+  const profile = await getCurrentProfile();
+  const authState = !profile
+    ? "logged_out"
+    : profile.verification === "none"
+      ? "unverified"
+      : "ok";
+
+  const ratings =
+    ((schoolData?.data?.school_ratings ?? []) as Record<string, number>[]) ??
+    [];
+  const ratingAvg = (key: string) =>
+    ratings.length === 0
+      ? null
+      : (
+          ratings.reduce((sum, r) => sum + (r[key] ?? 0), 0) / ratings.length
+        ).toFixed(1);
 
   const profCountByFaculty = new Map<string, number>();
   for (const p of professors ?? []) {
@@ -61,10 +87,7 @@ export default async function Home() {
       {/* HERO */}
       <section className="grid items-center gap-10 py-16 lg:grid-cols-2 lg:py-24">
         <div>
-          <span className="badge bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-            🎓 FTU · Trường Luật & KHCT&Nhân văn
-          </span>
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+          <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
             {dict.home.heroTitle}
           </h1>
           <p className="mt-4 max-w-lg text-base text-zinc-600 dark:text-zinc-400">
@@ -220,6 +243,47 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* SCHOOL RATING (RMP-style campus ratings) */}
+      {schoolData && (
+        <section className="card mb-16 p-6">
+          <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center">
+            <div className="flex-1">
+              <h2 className="section-title">🏛️ {dict.home2.rateSchoolTitle}</h2>
+              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                {dict.home2.rateSchoolDesc}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+                {(
+                  [
+                    ["rating_quality", "avgQuality"],
+                    ["rating_social", "avgSocial"],
+                    ["rating_facilities", "avgFacilities"],
+                  ] as const
+                ).map(([col, label]) => {
+                  const avg = ratingAvg(col);
+                  return avg ? (
+                    <span key={col} className="text-zinc-500 dark:text-zinc-400">
+                      {dict.home2[label]}:{" "}
+                      <b className="text-amber-500">{avg}/5</b> ({ratings.length})
+                    </span>
+                  ) : null;
+                })}
+                {ratings.length === 0 && (
+                  <span className="text-xs text-zinc-400">
+                    {dict.home2.noSchoolRatings}
+                  </span>
+                )}
+              </div>
+            </div>
+            <SchoolRateForm
+              schoolId={schoolData.data?.id ?? ""}
+              dict={dict.home2}
+              authState={authState}
+            />
+          </div>
+        </section>
+      )}
 
       {/* PROFESSOR CTA */}
       <section className="card mb-16 overflow-hidden">

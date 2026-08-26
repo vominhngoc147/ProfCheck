@@ -299,6 +299,20 @@ const vi = {
     statProfessors: "Giảng viên",
     statFaculties: "Khoa",
     statReviews: "Đánh giá",
+    rateSchoolTitle: "Đánh giá trường của bạn",
+    rateSchoolDesc:
+      "Sinh viên chấm trường theo 3 tiêu chí — trung bình sẽ hiển thị công khai.",
+    quality: "Chất lượng đào tạo",
+    social: "Môi trường & hoạt động",
+    facilities: "Cơ sở vật chất",
+    submitRating: "Gửi đánh giá trường",
+    ratingSaved: "Đã lưu đánh giá trường!",
+    needVerifiedToRate: "Chỉ sinh viên đã xác thực mới được chấm trường.",
+    loginToRate: "Đăng nhập để chấm trường",
+    noSchoolRatings: "Chưa có ai chấm trường này.",
+    avgQuality: "Chất lượng",
+    avgSocial: "Môi trường",
+    avgFacilities: "CSVC",
   },
 };
 

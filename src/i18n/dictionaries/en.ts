@@ -303,6 +303,20 @@ const en: typeof vi = {
     statProfessors: "Professors",
     statFaculties: "Faculties",
     statReviews: "Reviews",
+    rateSchoolTitle: "Rate your school",
+    rateSchoolDesc:
+      "Students rate the school on 3 criteria — averages shown publicly.",
+    quality: "Teaching quality",
+    social: "Environment & activities",
+    facilities: "Facilities",
+    submitRating: "Submit school rating",
+    ratingSaved: "School rating saved!",
+    needVerifiedToRate: "Only verified students can rate the school.",
+    loginToRate: "Log in to rate the school",
+    noSchoolRatings: "No one has rated this school yet.",
+    avgQuality: "Quality",
+    avgSocial: "Social",
+    avgFacilities: "Facilities",
   },
 };
 
