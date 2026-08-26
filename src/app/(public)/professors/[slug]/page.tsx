@@ -216,7 +216,7 @@ export default async function ProfessorPage({
           {topTags.length > 0 && (
             <div>
               <p className="mb-1.5 text-sm font-medium">
-                💬 {dict.reviewForm.tagsLabel}
+                💬 {dict.tags.label}
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {topTags.map(([t, n]) => (
