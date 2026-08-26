@@ -17,6 +17,7 @@ const en: typeof vi = {
     back: "Back",
     verifyAccount: "Verify account",
     opportunities: "Opportunities",
+    schools: "Schools",
     myReviews: "My reviews",
   },
   home: {
@@ -25,6 +26,7 @@ const en: typeof vi = {
       "Real student reviews of professors: teaching quality, fair grading, and whether they're worth choosing for research / thesis supervision.",
     searchPlaceholder: "Search professor or course...",
     browseByFaculty: "Browse by school / faculty",
+    browseBySchool: "Universities",
     professors: "professors",
     reviews: "reviews",
     howItWorksTitle: "How it works",
@@ -311,6 +313,7 @@ const en: typeof vi = {
     topEmpty: "No rankings yet — be the first to review!",
     viewAll: "View all",
     statProfessors: "Professors",
+    statSchools: "Schools",
     statFaculties: "Faculties",
     statReviews: "Reviews",
     rateSchoolTitle: "Rate your school",
@@ -343,6 +346,15 @@ const en: typeof vi = {
     no: "No",
     unsure: "Can't remember",
     optionalNote: "(optional)",
+  },
+  schools: {
+    title: "Universities",
+    subtitle: "Pick a school to browse faculties and professors",
+    empty: "No schools yet.",
+    allProfessors: "All professors",
+  },
+  professors: {
+    all: "All professors",
   },
 };
 

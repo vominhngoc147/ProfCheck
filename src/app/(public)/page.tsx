@@ -2,7 +2,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary, getLocale, interpolate } from "@/i18n";
 import { HeroIllustration, Icon } from "@/components/illustrations";
-import { SchoolRateForm } from "@/components/school-rate-form";
 import { getCurrentProfile } from "@/lib/auth";
 
 const AVATAR_COLORS = [
@@ -25,16 +24,17 @@ export default async function Home() {
   const locale = await getLocale();
   const supabase = await createClient();
 
-  const [{ data: faculties }, { data: professors }, reviewsCount, schoolData] =
+  const [{ data: schools }, { data: professors }, reviewsCount] =
     await Promise.all([
       supabase
-        .from("faculties")
+        .from("schools")
         .select("id, slug, name_vi, name_en")
+        .eq("is_active", true)
         .order("name_vi"),
       supabase
         .from("professors")
         .select(
-          "id, slug, full_name, academic_title, source_status, review_count, avg_overall, avg_difficulty, faculty_id"
+          "id, slug, full_name, academic_title, source_status, review_count, avg_overall, avg_difficulty, school_id, faculty_id"
         )
         .order("review_count", { ascending: false })
         .limit(200),
@@ -42,38 +42,15 @@ export default async function Home() {
         .from("reviews")
         .select("id", { count: "exact", head: true })
         .eq("status", "approved"),
-      supabase
-        .from("schools")
-        .select(
-          "id, name_vi, name_en, school_ratings(rating_quality, rating_social, rating_facilities, rating_reputation, rating_location, rating_support)"
-        )
-        .eq("is_active", true)
-        .limit(1)
-        .single(),
     ]);
-  const profile = await getCurrentProfile();
-  const authState = !profile
-    ? "logged_out"
-    : profile.verification === "none"
-      ? "unverified"
-      : "ok";
+  await getCurrentProfile();
 
-  const ratings =
-    ((schoolData?.data?.school_ratings ?? []) as Record<string, number>[]) ??
-    [];
-  const ratingAvg = (key: string) =>
-    ratings.length === 0
-      ? null
-      : (
-          ratings.reduce((sum, r) => sum + (r[key] ?? 0), 0) / ratings.length
-        ).toFixed(1);
-
-  const profCountByFaculty = new Map<string, number>();
+  const profCountBySchool = new Map<string, number>();
   for (const p of professors ?? []) {
-    if (p.faculty_id)
-      profCountByFaculty.set(
-        p.faculty_id,
-        (profCountByFaculty.get(p.faculty_id) ?? 0) + 1
+    if (p.school_id)
+      profCountBySchool.set(
+        p.school_id,
+        (profCountBySchool.get(p.school_id) ?? 0) + 1
       );
   }
 
@@ -118,7 +95,7 @@ export default async function Home() {
       <section className="card grid grid-cols-3 divide-x divide-zinc-100 py-6 text-center dark:divide-zinc-800">
         {[
           { value: professors?.length ?? 0, label: dict.home2.statProfessors },
-          { value: faculties?.length ?? 0, label: dict.home2.statFaculties },
+          { value: schools?.length ?? 0, label: dict.home2.statSchools },
           {
             value: reviewsCount.count ?? 0,
             label: dict.home2.statReviews,
@@ -174,14 +151,19 @@ export default async function Home() {
         </section>
       )}
 
-      {/* FACULTIES */}
+      {/* SCHOOLS */}
       <section className="py-8">
-        <h2 className="section-title mb-5">{dict.home.browseByFaculty}</h2>
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="section-title">🏫 {dict.home.browseBySchool}</h2>
+          <Link href="/schools" className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+            {dict.home2.viewAll} →
+          </Link>
+        </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          {(faculties ?? []).map((faculty, i) => (
+          {(schools ?? []).map((school, i) => (
             <Link
-              key={faculty.id}
-              href={`/search?faculty=${faculty.slug}`}
+              key={school.id}
+              href={`/schools/${school.slug}`}
               className="card group flex items-center gap-4 p-5 transition-all hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md dark:hover:border-indigo-700"
             >
               <span
@@ -189,15 +171,15 @@ export default async function Home() {
                   AVATAR_COLORS[i % AVATAR_COLORS.length]
                 }`}
               >
-                {(locale === "en" && faculty.name_en ? faculty.name_en : faculty.name_vi).charAt(0)}
+                🎓
               </span>
               <div className="min-w-0">
                 <p className="font-semibold group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                  {locale === "en" && faculty.name_en ? faculty.name_en : faculty.name_vi}
+                  {locale === "en" && school.name_en ? school.name_en : school.name_vi}
                 </p>
                 <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
                   {interpolate(dict.home.professors, {
-                    count: profCountByFaculty.get(faculty.id) ?? 0,
+                    count: profCountBySchool.get(school.id) ?? 0,
                   })}
                   {" →"}
                 </p>
@@ -243,50 +225,6 @@ export default async function Home() {
           ))}
         </div>
       </section>
-
-      {/* SCHOOL RATING (RMP-style campus ratings) */}
-      {schoolData && (
-        <section className="card mb-16 p-6">
-          <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center">
-            <div className="flex-1">
-              <h2 className="section-title">🏛️ {dict.home2.rateSchoolTitle}</h2>
-              <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                {dict.home2.rateSchoolDesc}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
-                {(
-                  [
-                    ["rating_quality", "avgQuality"],
-                    ["rating_social", "avgSocial"],
-                    ["rating_facilities", "avgFacilities"],
-                    ["rating_reputation", "avgReputation"],
-                    ["rating_location", "avgLocation"],
-                    ["rating_support", "avgSupport"],
-                  ] as const
-                ).map(([col, label]) => {
-                  const avg = ratingAvg(col);
-                  return avg ? (
-                    <span key={col} className="text-zinc-500 dark:text-zinc-400">
-                      {dict.home2[label]}:{" "}
-                      <b className="text-amber-500">{avg}/5</b> ({ratings.length})
-                    </span>
-                  ) : null;
-                })}
-                {ratings.length === 0 && (
-                  <span className="text-xs text-zinc-400">
-                    {dict.home2.noSchoolRatings}
-                  </span>
-                )}
-              </div>
-            </div>
-            <SchoolRateForm
-              schoolId={schoolData.data?.id ?? ""}
-              dict={dict.home2}
-              authState={authState}
-            />
-          </div>
-        </section>
-      )}
 
       {/* PROFESSOR CTA */}
       <section className="card mb-16 overflow-hidden">

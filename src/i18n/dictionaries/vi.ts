@@ -15,6 +15,7 @@ const vi = {
     back: "Quay lại",
     verifyAccount: "Xác thực tài khoản",
     opportunities: "Cơ hội",
+    schools: "Trường",
     myReviews: "Đánh giá của tôi",
   },
   home: {
@@ -23,6 +24,7 @@ const vi = {
       "Sinh viên đánh giá thật về giảng viên: dạy hay, chấm công bằng, có đáng chọn làm người hướng dẫn NCKH/khóa luận không.",
     searchPlaceholder: "Tìm tên giảng viên, học phần...",
     browseByFaculty: "Xem theo khoa / trường thành viên",
+    browseBySchool: "Trường đại học",
     professors: "giảng viên",
     reviews: "đánh giá",
     howItWorksTitle: "Nó hoạt động thế nào?",
@@ -307,6 +309,7 @@ const vi = {
     topEmpty: "Chưa có dữ liệu xếp hạng — hãy là người đánh giá đầu tiên!",
     viewAll: "Xem tất cả",
     statProfessors: "Giảng viên",
+    statSchools: "Trường",
     statFaculties: "Khoa",
     statReviews: "Đánh giá",
     rateSchoolTitle: "Đánh giá trường của bạn",
@@ -339,6 +342,15 @@ const vi = {
     no: "Không",
     unsure: "Không nhớ",
     optionalNote: "(tùy chọn)",
+  },
+  schools: {
+    title: "Trường đại học",
+    subtitle: "Chọn trường để xem khoa và giảng viên",
+    empty: "Chưa có trường nào.",
+    allProfessors: "Tất cả giảng viên",
+  },
+  professors: {
+    all: "Tất cả giảng viên",
   },
 };
 
