@@ -330,17 +330,24 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
 - ✅ `/me`: lịch sử review của SV (kèm trạng thái duyệt)
 - ✅ `/opportunities`: sinh viên browse + apply tin cơ hội (filter theo loại);
   GV thấy danh sách ứng viên trong `/prof/slots`
+- ✅ **DEPLOYED PRODUCTION**: https://profcheck-chi.vercel.app
+  (project Vercel `vominhngoc147/profcheck`, env vars `NEXT_PUBLIC_SUPABASE_URL` +
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` đã set cho production; deploy qua Vercel CLI.
+  Lưu ý: GitHub auto-connect chưa xong — private repo cần cấp quyền Vercel App trên GitHub,
+  hiện deploy bằng CLI `vercel deploy --prod`)
+- ⬜ Cần làm thủ công: Supabase Dashboard → Authentication → URL Configuration:
+  thêm `https://profcheck-chi.vercel.app/auth/callback` vào Redirect URLs (và Site URL)
+  để Google OAuth chạy trên production
 - ⬜ Việc đầu sau khi đăng ký user đầu tiên — promote thành admin:
   `update public.profiles set role='admin' where id='<user-id>';`
 - Git repo: https://github.com/vominhngoc147/ProfCheck (private)
 
 ## 7. Việc cần làm tiếp (next actions)
 
-1. Deploy Vercel qua CLI (user chạy `vercel login`, sau đó deploy + set env vars)
-2. Cấu hình Supabase Auth: thêm redirect URLs (localhost:4000 + domain Vercel)
-   cho Google OAuth
-3. Right-of-reply cho GV (Phase 3), AI summary, recommend SV↔GV theo tags/research_interests
-4. Report review UI (nút report trên review → insert vào bảng reports)
+1. Cấu hình Google OAuth redirect trong Supabase Dashboard (xem ⬜ phía trên) + tạo Google Cloud OAuth credentials nếu chưa có
+2. Kết nối GitHub repo với Vercel project (grant Vercel App access cho private repo) để auto-deploy mỗi lần push
+3. Right-of-reply cho GV, AI summary review, recommend SV↔GV theo tags/research_interests
+4. Report review UI (nút report trên từng review → insert reports)
 
 ## 8. Quy ước làm việc cho session sau
 
