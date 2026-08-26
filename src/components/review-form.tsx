@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { submitReviewAction } from "@/app/actions/review";
+import { REVIEW_TAG_KEYS } from "@/lib/tags";
 
 type ReviewFormState =
   | { status: "idle" }
@@ -30,6 +31,8 @@ type ReviewDict = {
   ratingRequired: string;
   contentTooShort: string;
   professorBlocked: string;
+  tagsLabel: string;
+  tagLabels: Record<string, string>;
 };
 
 function StarInput({
@@ -77,6 +80,13 @@ export function ReviewForm({
   const [overall, setOverall] = useState(0);
   const [difficulty, setDifficulty] = useState(0);
   const [fairness, setFairness] = useState(0);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
+  function toggleTag(tag: string) {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+  }
 
   if (authState === "logged_out")
     return (
@@ -156,6 +166,29 @@ export function ReviewForm({
           <input type="radio" name="would_take_again" value="unsure" defaultChecked /> N/A
         </label>
       </fieldset>
+
+      <div>
+        <p className="label">{dict.tagsLabel}</p>
+        <div className="flex flex-wrap gap-1.5">
+          {REVIEW_TAG_KEYS.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => toggleTag(tag)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                selectedTags.includes(tag)
+                  ? "border-indigo-600 bg-indigo-600 text-white"
+                  : "border-zinc-300 text-zinc-600 hover:border-indigo-400 dark:border-zinc-600 dark:text-zinc-300"
+              }`}
+            >
+              {dict.tagLabels[tag] ?? tag}
+            </button>
+          ))}
+        </div>
+        {selectedTags.map((tag) => (
+          <input key={tag} type="hidden" name="tags" value={tag} />
+        ))}
+      </div>
 
       <div>
         <textarea

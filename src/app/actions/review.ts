@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { REVIEW_TAG_KEYS } from "@/lib/tags";
 
 export type ReviewFormState =
   | { status: "idle" }
@@ -77,7 +78,12 @@ export async function submitReviewAction(
     would_take_again:
       wouldTakeAgainRaw === null ? null : wouldTakeAgainRaw === "yes",
     content,
-    tags: [],
+    tags: formData
+      .getAll("tags")
+      .map(String)
+      .filter((t): t is (typeof REVIEW_TAG_KEYS)[number] =>
+        (REVIEW_TAG_KEYS as readonly string[]).includes(t)
+      ),
     status: needsModeration ? "pending" : "approved",
   });
 
@@ -88,4 +94,88 @@ export async function submitReviewAction(
 
   revalidatePath(`/professors/${professorSlug}`);
   return { status: "success" };
+}
+
+export type SimpleResult = { ok: boolean; error?: string };
+
+export async function reportReviewAction(
+  reviewId: string,
+  reason: string,
+  details: string
+): Promise<SimpleResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "login_required" };
+  if (!reason) return { ok: false, error: "generic" };
+
+  const { error } = await supabase.from("reports").insert({
+    review_id: reviewId,
+    reporter_id: user.id,
+    reason,
+    details: details.trim() || null,
+  });
+  if (error) {
+    if (error.code === "23505") return { ok: false, error: "dup" };
+    return { ok: false, error: "generic" };
+  }
+  return { ok: true };
+}
+
+const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+export async function updateMyReviewAction(
+  reviewId: string,
+  content: string
+): Promise<SimpleResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "login_required" };
+
+  const trimmed = content.trim();
+  if (trimmed.length < 30) return { ok: false, error: "content_short" };
+
+  const { data: review } = await supabase
+    .from("reviews")
+    .select("author_id, created_at")
+    .eq("id", reviewId)
+    .single();
+  if (!review || review.author_id !== user.id)
+    return { ok: false, error: "not_owner" };
+  if (Date.now() - new Date(review.created_at).getTime() > EDIT_WINDOW_MS)
+    return { ok: false, error: "edit_window_over" };
+
+  const { error } = await supabase
+    .from("reviews")
+    .update({ content: trimmed, status: "pending", updated_at: new Date().toISOString() })
+    .eq("id", reviewId);
+  if (error) return { ok: false, error: "generic" };
+
+  revalidatePath("/me");
+  return { ok: true };
+}
+
+export async function deleteMyReviewAction(reviewId: string): Promise<SimpleResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "login_required" };
+
+  const { data: review } = await supabase
+    .from("reviews")
+    .select("author_id")
+    .eq("id", reviewId)
+    .single();
+  if (!review || review.author_id !== user.id)
+    return { ok: false, error: "not_owner" };
+
+  const { error } = await supabase.from("reviews").delete().eq("id", reviewId);
+  if (error) return { ok: false, error: "generic" };
+
+  revalidatePath("/me");
+  return { ok: true };
 }

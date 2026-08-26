@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/auth";
 import { getDictionary } from "@/i18n";
 import { StarRating } from "@/components/star-rating";
+import { MyReviewControls } from "@/components/my-review-controls";
 
 export const metadata = { title: "Đánh giá của tôi" };
 
@@ -80,6 +81,12 @@ export default async function MePage() {
                   {(prof as { full_name: string }).full_name} ↗
                 </Link>
               )}
+              <MyReviewControls
+                reviewId={r.id}
+                content={r.content}
+                createdAt={r.created_at}
+                dict={dict.myReviewUi}
+              />
             </article>
           );
         })}

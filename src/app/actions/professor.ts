@@ -216,3 +216,39 @@ export async function deleteOpportunityAction(
   await supabase.from("opportunities").delete().eq("id", opportunityId);
   revalidatePath("/prof/slots");
 }
+
+export async function postReplyAction(
+  reviewId: string,
+  content: string
+): Promise<{ ok: boolean; error?: string }> {
+  const { professor } = await getOwnedProfessor();
+  if (!professor) return { ok: false, error: "not_owner" };
+
+  const trimmed = content.trim();
+  if (trimmed.length < 1 || trimmed.length > 1000)
+    return { ok: false, error: "invalid" };
+
+  const supabase = await createClient();
+  const { data: review } = await supabase
+    .from("public_reviews")
+    .select("id, professor_id")
+    .eq("id", reviewId)
+    .single();
+  if (!review || review.professor_id !== professor.id)
+    return { ok: false, error: "generic" };
+
+  const { error } = await supabase.from("professor_replies").upsert(
+    {
+      review_id: reviewId,
+      professor_id: professor.id,
+      content: trimmed,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "review_id" }
+  );
+  if (error) return { ok: false, error: "generic" };
+
+  revalidatePath(`/professors/${professor.slug}`);
+  revalidatePath("/prof");
+  return { ok: true };
+}

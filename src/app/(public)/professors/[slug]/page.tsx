@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary, getLocale, interpolate } from "@/i18n";
 import { StarRating, ScoreBadge } from "@/components/star-rating";
+import { Avatar } from "@/components/professor-card";
 import { ReviewForm } from "@/components/review-form";
+import { ReportButton } from "@/components/report-button";
 import type { Dictionary } from "@/i18n";
 
 type PublicReview = {
@@ -15,6 +17,7 @@ type PublicReview = {
   is_anonymous: boolean;
   author_name: string | null;
   content: string;
+  tags: string[] | null;
   created_at: string;
 };
 
@@ -44,16 +47,20 @@ export default async function ProfessorPage({
 
   if (profError || !professor) notFound();
 
-  const [{ data: reviews }, { data: faculty }, { data: auth }] =
+  const [{ data: reviews }, { data: replies }, { data: faculty }, { data: auth }] =
     await Promise.all([
       supabase
         .from("public_reviews")
         .select(
-          "id, rating_overall, rating_difficulty, rating_fairness, would_take_again, is_anonymous, author_name, content, created_at"
+          "id, rating_overall, rating_difficulty, rating_fairness, would_take_again, is_anonymous, author_name, content, tags, created_at"
         )
         .eq("professor_id", professor.id)
         .eq("status", "approved")
         .order("created_at", { ascending: false }),
+      supabase
+        .from("professor_replies")
+        .select("review_id, content, created_at")
+        .eq("professor_id", professor.id),
       professor.faculty_id
         ? supabase
             .from("faculties")
@@ -63,6 +70,9 @@ export default async function ProfessorPage({
         : Promise.resolve({ data: null }),
       supabase.auth.getUser(),
     ]);
+  const replyMap = new Map(
+    (replies ?? []).map((r) => [r.review_id as string, r])
+  );
 
   let verification: string | null = null;
   if (auth?.user) {
@@ -100,32 +110,33 @@ export default async function ProfessorPage({
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <div className="flex items-start gap-6">
-        <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-2xl font-bold text-white">
-          {professor.full_name.charAt(0).toUpperCase()}
-        </span>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-bold sm:text-3xl">
-            {displayName}
-            {professor.source_status === "user_created" && (
-              <span className="ml-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 align-middle text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                {dict.professor.unverifiedLabel}
-              </span>
+      <div className="card relative mb-8 overflow-hidden p-6">
+        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-indigo-500/90 via-violet-500/80 to-fuchsia-500/70" />
+        <div className="relative flex items-start gap-5 pt-8">
+          <Avatar name={professor.full_name} size="xl" />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold sm:text-3xl">
+              {displayName}
+              {professor.source_status === "user_created" && (
+                <span className="badge ml-2 bg-amber-100 align-middle text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                  {dict.professor.unverifiedLabel}
+                </span>
+              )}
+            </h1>
+            {faculty && (
+              <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+                {locale === "en" && faculty.name_en ? faculty.name_en : faculty.name_vi}
+              </p>
             )}
-          </h1>
-          {faculty && (
-            <p className="mt-1 text-zinc-500 dark:text-zinc-400">
-              {locale === "en" && faculty.name_en ? faculty.name_en : faculty.name_vi}
+            <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+              {interpolate(dict.professor.reviewCount, {
+                count: professor.review_count,
+              })}
             </p>
-          )}
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            {interpolate(dict.professor.reviewCount, {
-              count: professor.review_count,
-            })}
-          </p>
+          </div>
           <Link
             href="/search"
-            className="mt-2 inline-block text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+            className="hidden shrink-0 self-start text-sm text-indigo-600 hover:underline dark:text-indigo-400 sm:block"
           >
             ← {dict.common.back}
           </Link>
@@ -196,7 +207,7 @@ export default async function ProfessorPage({
       <section className="mt-10 rounded-2xl border border-zinc-200 p-6 dark:border-zinc-700">
         <ReviewForm
           professorSlug={professor.slug}
-          dict={dict.reviewForm}
+          dict={{ ...dict.reviewForm, tagsLabel: dict.tags.label, tagLabels: dict.tags }}
           authState={authState}
         />
       </section>
@@ -232,19 +243,44 @@ export default async function ProfessorPage({
               <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
                 {review.content}
               </p>
-              <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
-                <span>
-                  {dict.professor.difficulty}: {review.rating_difficulty}/5
-                </span>
-                <span>
-                  {dict.professor.fairness}: {review.rating_fairness}/5
-                </span>
-                {review.would_take_again !== null && (
-                  <span>
-                    {dict.professor.wouldTakeAgain}:{" "}
-                    {review.would_take_again ? dict.professor.yes : dict.professor.no}
+              {Array.isArray(review.tags) && review.tags.length > 0 && (
+                <p className="mt-2 flex flex-wrap gap-1.5">
+                  {(review.tags as string[]).map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+                    >
+                      {dict.tags[t as keyof typeof dict.tags] ?? t}
+                    </span>
+                  ))}
+                </p>
+              )}
+              {replyMap.get(review.id) && (
+                <blockquote className="mt-3 rounded-r-xl border-l-4 border-indigo-400 bg-zinc-50 py-2 pl-3 pr-2 text-sm dark:bg-zinc-800/60">
+                  <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                    {displayName} ↩
                   </span>
-                )}
+                  <p className="mt-1 whitespace-pre-line text-zinc-600 dark:text-zinc-300">
+                    {replyMap.get(review.id)!.content as string}
+                  </p>
+                </blockquote>
+              )}
+              <div className="mt-3 flex items-center justify-between">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+                  <span>
+                    {dict.professor.difficulty}: {review.rating_difficulty}/5
+                  </span>
+                  <span>
+                    {dict.professor.fairness}: {review.rating_fairness}/5
+                  </span>
+                  {review.would_take_again !== null && (
+                    <span>
+                      {dict.professor.wouldTakeAgain}:{" "}
+                      {review.would_take_again ? dict.professor.yes : dict.professor.no}
+                    </span>
+                  )}
+                </div>
+                <ReportButton reviewId={review.id} dict={dict.reportUi} />
               </div>
             </article>
           ))}

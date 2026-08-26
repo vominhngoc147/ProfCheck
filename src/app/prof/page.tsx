@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOwnedProfessor } from "@/lib/auth";
 import { getDictionary } from "@/i18n";
 import { StarRating } from "@/components/star-rating";
+import { ReplyForm } from "@/components/reply-form";
 
 export default async function ProfDashboardPage() {
   const { professor } = await getOwnedProfessor();
@@ -10,22 +11,30 @@ export default async function ProfDashboardPage() {
   if (!professor) return null;
 
   const supabase = await createClient();
-  const [{ data: fresh }, { data: reviews }] = await Promise.all([
-    supabase
-      .from("professors")
-      .select("review_count, avg_overall, would_take_again_pct")
-      .eq("id", professor.id)
-      .single(),
-    supabase
-      .from("public_reviews")
-      .select(
-        "id, rating_overall, content, is_anonymous, author_name, created_at"
-      )
-      .eq("professor_id", professor.id)
-      .eq("status", "approved")
-      .order("created_at", { ascending: false })
-      .limit(5),
-  ]);
+  const [{ data: fresh }, { data: reviews }, { data: replies }] =
+    await Promise.all([
+      supabase
+        .from("professors")
+        .select("review_count, avg_overall, would_take_again_pct")
+        .eq("id", professor.id)
+        .single(),
+      supabase
+        .from("public_reviews")
+        .select(
+          "id, rating_overall, content, is_anonymous, author_name, created_at"
+        )
+        .eq("professor_id", professor.id)
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(5),
+      supabase
+        .from("professor_replies")
+        .select("review_id, content")
+        .eq("professor_id", professor.id),
+    ]);
+  const replyMap = new Map(
+    (replies ?? []).map((r) => [r.review_id as string, r.content as string])
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -104,6 +113,23 @@ export default async function ProfDashboardPage() {
               <p className="mt-2 line-clamp-2 text-zinc-600 dark:text-zinc-400">
                 {r.content}
               </p>
+              <div className="mt-3">
+                {replyMap.get(r.id) && (
+                  <p className="mb-2 rounded-lg bg-zinc-50 px-2.5 py-1.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                    ↩ {replyMap.get(r.id)}
+                  </p>
+                )}
+                <ReplyForm
+                  reviewId={r.id}
+                  initial={replyMap.get(r.id) ?? null}
+                  labels={{
+                    placeholder: dict.replyUi.placeholder,
+                    post: dict.replyUi.post,
+                    posted: dict.replyUi.posted,
+                    editReply: dict.replyUi.editReply,
+                  }}
+                />
+              </div>
             </article>
           ))}
         </div>
