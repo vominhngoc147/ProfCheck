@@ -8,6 +8,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres-3FCF8E?logo=supabase)](https://supabase.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38BDF8?logo=tailwindcss)](https://tailwindcss.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Migrate](https://github.com/vominhngoc147/ProfCheck/actions/workflows/migrate.yml/badge.svg)](https://github.com/vominhngoc147/ProfCheck/actions/workflows/migrate.yml)
 
 🔗 **Dùng thử:** [profcheckvn.vercel.app](https://profcheckvn.vercel.app)
@@ -207,6 +208,6 @@ duyệt tự động.
 
 ## 📄 Giấy phép
 
-Dự án chưa công bố giấy phép chính thức — mặc định mọi đóng góp thuộc về tác giả và nhóm
-ProfCheck theo thỏa thuận trong pull request. Khi chốt license (dự kiến MIT), file `LICENSE`
-sẽ được thêm và mục này cập nhật tương ứng.
+Project dùng giấy phép **MIT** — xem file [LICENSE](./LICENSE). Bạn được tự do dùng,
+sửa, phân phối, kể cả cho mục đích thương mại, chỉ cần giữ lại thông báo bản quyền.
+Mọi đóng góp qua pull request được hiểu là đồng ý cấp phép theo MIT.
