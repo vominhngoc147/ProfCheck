@@ -394,6 +394,13 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
   backfill toàn bộ + gỡ trigger `trg_review_status` ép approved mọi insert (lỗ hổng
   kiểm duyệt). Đã test end-to-end (insert/delete review thử → stats lên/xuống đúng).
   Trang Trường có thêm thanh tìm kiếm + lọc khoa, nhảy sang `/search` giữ sẵn trường
+- ✅ **Data CEPM (2026-10-04)**: crawl lại `cepm.ftu.edu.vn/ho-so-giang-vien` được
+  **58 giảng viên** 6 bộ môn vào `supabase/seed_cepm_real.sql` (UTF-8 sạch, upsert
+  idempotent, không chạm profile đã claim). File cũ (41 dòng) bị lỗi encoding và
+  SQL sai nên chưa từng apply được. Trang chi tiết ktdqt.ftu.edu.vn đã chết (404)
+  nên bio lấy từ trang danh sách. Script crawl tại `%TEMP%\opencode\crawl-cepm\`.
+  ⚠️ Seed chạy tay qua pooler (không qua CI), đã apply xong, verify đọc lại 0 lỗi font.
+  Ghi chú: `seed_lps_real.sql` dính cùng lỗi encoding, chưa xử lý.
 
 ## 7. Việc cần làm tiếp (next actions)
 
