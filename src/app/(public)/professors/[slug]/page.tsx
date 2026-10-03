@@ -43,7 +43,8 @@ export default async function ProfessorPage({
   const { data: professor, error: profError } = await supabase
     .from("professors")
     .select(
-      `id, slug, full_name, academic_title, bio, source_status,
+      `id, slug, full_name, academic_title, bio, avatar_url, source_status,
+       degrees, titles, awards, research_fields, research_interests,
        review_count, avg_overall, avg_difficulty, avg_fairness, avg_clarity, would_take_again_pct,
        faculty_id`
     )
@@ -52,7 +53,7 @@ export default async function ProfessorPage({
 
   if (profError || !professor) notFound();
 
-  const [{ data: reviews }, { data: replies }, { data: faculty }, { data: auth }] =
+  const [{ data: reviews }, { data: replies }, { data: faculty }, { data: auth }, { data: taught }] =
     await Promise.all([
       supabase
         .from("public_reviews")
@@ -74,6 +75,10 @@ export default async function ProfessorPage({
             .single()
         : Promise.resolve({ data: null }),
       supabase.auth.getUser(),
+      supabase
+        .from("professor_courses")
+        .select("courses(code, name_vi)")
+        .eq("professor_id", professor.id),
     ]);
   const replyMap = new Map(
     (replies ?? []).map((r) => [r.review_id as string, r])
@@ -128,7 +133,7 @@ export default async function ProfessorPage({
       <div className="card relative mb-8 overflow-hidden p-6">
         <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-indigo-500/90 via-violet-500/80 to-fuchsia-500/70" />
         <div className="relative flex items-start gap-5 pt-8">
-          <Avatar name={professor.full_name} size="xl" />
+          <Avatar name={professor.full_name} size="xl" src={professor.avatar_url} />
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl font-bold sm:text-3xl">
               {displayName}
@@ -239,6 +244,93 @@ export default async function ProfessorPage({
           <p className="text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
             {professor.bio}
           </p>
+        </section>
+      )}
+
+      {((professor.degrees ?? []).length > 0 ||
+        (professor.titles ?? []).length > 0 ||
+        ((professor.research_fields ?? []).length > 0 ||
+          (professor.research_interests ?? []).length > 0) ||
+        (Array.isArray(professor.awards) && professor.awards.length > 0) ||
+        (taught ?? []).length > 0) && (
+        <section className="mt-6 grid gap-4 sm:grid-cols-2">
+          {(professor.degrees ?? []).length > 0 && (
+            <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
+              <p className="mb-1 text-sm font-semibold">{dict.professor.degreesTitle}</p>
+              <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                {(professor.degrees as string[]).join(" · ")}
+              </p>
+            </div>
+          )}
+          {(professor.titles ?? []).length > 0 && (
+            <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
+              <p className="mb-1 text-sm font-semibold">{dict.professor.titlesTitle}</p>
+              <p className="text-sm text-zinc-700 dark:text-zinc-300">
+                {(professor.titles as string[]).join(" · ")}
+              </p>
+            </div>
+          )}
+          {((professor.research_fields ?? []).length > 0 ||
+            (professor.research_interests ?? []).length > 0) && (
+            <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
+              <p className="mb-1 text-sm font-semibold">
+                {dict.professor.researchFieldsTitle}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  ...((professor.research_fields ?? []) as string[]),
+                  ...((professor.research_interests ?? []) as string[]),
+                ]
+                  .filter((v, i, a) => a.indexOf(v) === i)
+                  .slice(0, 12)
+                  .map((f) => (
+                    <span
+                      key={f}
+                      className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300"
+                    >
+                      {f}
+                    </span>
+                  ))}
+              </div>
+            </div>
+          )}
+          {Array.isArray(professor.awards) && professor.awards.length > 0 && (
+            <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
+              <p className="mb-1 text-sm font-semibold">{dict.professor.awardsTitle}</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm text-zinc-700 dark:text-zinc-300">
+                {(professor.awards as { year?: string; title: string; org?: string }[]).map(
+                  (a, i) => (
+                    <li key={i}>
+                      {[a.year, a.title, a.org].filter(Boolean).join(" — ")}
+                    </li>
+                  )
+                )}
+              </ul>
+            </div>
+          )}
+          {(taught ?? []).length > 0 && (
+            <div className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700 sm:col-span-2">
+              <p className="mb-1 text-sm font-semibold">{dict.professor.coursesTitle}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {(taught as unknown as { courses: { code: string; name_vi: string } | { code: string; name_vi: string }[] | null }[]).map(
+                  (t, i) => {
+                    const c = Array.isArray(t.courses) ? t.courses[0] : t.courses;
+                    return (
+                      c && (
+                        <Link
+                          key={i}
+                          href={`/search?course_code=${encodeURIComponent(c.code)}`}
+                          className="rounded-full bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-700 hover:underline dark:bg-sky-950/60 dark:text-sky-300"
+                        >
+                          📘 {c.code}
+                        </Link>
+                      )
+                    );
+                  }
+                )}
+              </div>
+            </div>
+          )}
         </section>
       )}
 

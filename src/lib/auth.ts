@@ -43,10 +43,16 @@ export type OwnedProfessor = {
   full_name: string;
   academic_title: string | null;
   bio: string | null;
+  avatar_url: string | null;
   source_status: string;
   school_id: string;
   faculty_id: string | null;
   research_interests: string[];
+  research_fields: string[];
+  degrees: string[];
+  titles: string[];
+  awards: { year?: string; title: string; org?: string }[];
+  allow_forum_reup: boolean;
 };
 
 export async function getOwnedProfessor(): Promise<
@@ -57,7 +63,7 @@ export async function getOwnedProfessor(): Promise<
   const { data: professor } = await supabase
     .from("professors")
     .select(
-      "id, slug, full_name, academic_title, bio, source_status, school_id, faculty_id, research_interests"
+      "id, slug, full_name, academic_title, bio, avatar_url, source_status, school_id, faculty_id, research_interests, research_fields, degrees, titles, awards, allow_forum_reup"
     )
     .eq("owner_profile_id", profile.id)
     .maybeSingle();

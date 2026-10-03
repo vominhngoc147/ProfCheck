@@ -10,14 +10,11 @@ export function SortSelect({
   const router = useRouter();
   const params = useSearchParams();
   const current = params.get("sort") ?? "reviews";
-  const q = params.get("q");
-  const faculty = params.get("faculty");
 
   function change(sort: string) {
-    const sp = new URLSearchParams();
-    if (q) sp.set("q", q);
-    if (faculty) sp.set("faculty", faculty);
+    const sp = new URLSearchParams(params.toString());
     if (sort !== "reviews") sp.set("sort", sort);
+    else sp.delete("sort");
     router.replace(`/search?${sp.toString()}`);
   }
 

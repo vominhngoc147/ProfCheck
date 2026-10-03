@@ -21,8 +21,31 @@ export default async function ProfProfilePage() {
             researchInterests: dict.onboarding.researchInterests,
             submitCreate: dict.common.save,
             saved: dict.profDash.saved,
+            avatarLabel: dict.profDash.avatarLabel,
+            avatarHint: dict.profDash.avatarHint,
+            degreesLabel: dict.profDash.degreesLabel,
+            degreesPlaceholder: dict.profDash.degreesPlaceholder,
+            titlesLabel: dict.profDash.titlesLabel,
+            titlesPlaceholder: dict.profDash.titlesPlaceholder,
+            awardsLabel: dict.profDash.awardsLabel,
+            awardsHint: dict.profDash.awardsHint,
+            awardsPlaceholder: dict.profDash.awardsPlaceholder,
+            fieldsLabel: dict.profDash.fieldsLabel,
+            fieldsPlaceholder: dict.profDash.fieldsPlaceholder,
+            allowReupLabel: dict.profDash.allowReupLabel,
+            allowReupHint: dict.profDash.allowReupHint,
           }}
-          initial={professor}
+          initial={{
+            academic_title: professor.academic_title,
+            bio: professor.bio,
+            avatar_url: professor.avatar_url,
+            research_interests: professor.research_interests ?? [],
+            research_fields: professor.research_fields ?? [],
+            degrees: professor.degrees ?? [],
+            titles: professor.titles ?? [],
+            awards: professor.awards ?? [],
+            allow_forum_reup: professor.allow_forum_reup ?? true,
+          }}
         />
       )}
     </div>

@@ -47,6 +47,14 @@ Project đã được scaffold tại thư mục gốc của repo (`profcheck/`).
 | D10 | 2026-08-26 | Cấm GV review GV | Giảng viên (role='professor') KHÔNG được viết review về GV khác (tránh xung đột lợi ích đồng nghiệp). Chặn ở server action; sau thêm RLS/trigger |
 | D11 | 2026-08-26 | Xác minh claim GV hybrid | Claim/tạo profile GV: email thuộc `edu_domains` của trường → **auto-approve** (`claimed` + set `owner_profile_id` + role 'professor'); email khác → upload bằng chứng, **admin duyệt**. Nhất quán với flow SV (D4) |
 | D12 | 2026-08-26 | Kết nối SV–GV Phase 3 | Mô hình "Opportunities": GV đăng tin cơ hội (`opportunities`: nckh/kltn/luan_van/thuc_tap/khac, tags, slots, deadline) → SV apply (`applications`). Recommend giai đoạn sau: match tags/lĩnh vực SV ↔ `research_interests` GV (keyword trước, AI sau). Schema tạo sẵn từ migration 0003, UI làm Phase 3 |
+| D13 | 2026-10-03 | Thang điểm 5 sao nửa bước | Chốt **5 sao + bước 0.5 (0.5–5.0)**, không làm 7 sao. Triển khai ở đợt 3 (migration 0018) |
+| D14 | 2026-10-03 | Multi-review 1 GV | **1 SV được review 1 GV nhiều lần** (khác môn/khác mục đích). Unique mới `(professor_id, author_id, purpose, lower(coalesce(course_code,'')))` — migration 0017 |
+| D15 | 2026-10-03 | Review theo purpose | **1 review = 1 purpose** (`hoc_tap/nckh/kltn/ttgk`), form điểm khác nhau theo purpose. Đợt 3 |
+| D16 | 2026-10-03 | CTĐT theo review | CTĐT (`clc/cttt/dhnnqt/chinh_quy/khac`, nullable) lưu **theo review**. Cột thêm từ 0017, UI filter từ đợt 2 |
+| D17 | 2026-10-03 | Search kiểu Úm | Tab purpose + filter tên/trường/khoa/mã HP/tên HP/CTĐT (Học-KLTN-TTGK) và tên/lĩnh vực/trường-khoa (NCKH). UI trước, seed 4 trường mới sau |
+| D18 | 2026-10-03 | P-forum full Reddit-like | Vote post+comment, nested comment, tag/topic, reup review (link+quote). Làm cuối (đợt 5) |
+| D19 | 2026-10-03 | Ảnh GV | Ảnh do **GV claimed + admin** quản lý (bucket `professor-avatars` public, 2MB). Không cho SV đổi ảnh người khác |
+| D20 | 2026-10-03 | Reup flag 2 lớp | `allow_forum_reup` ở cả `professors` (policy mặc định của GV) và `reviews` (từng bài). Reup chỉ khi cả 2 true |
 
 Mọi quyết định mới thêm vào bảng này với số tăng dần.
 
@@ -341,12 +349,32 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
 - ⬜ Việc đầu sau khi đăng ký user đầu tiên — promote thành admin:
   `update public.profiles set role='admin' where id='<user-id>';`
 - Git repo: https://github.com/vominhngoc147/ProfCheck (private)
+- ✅ **Đợt 1+2 (2026-10-03, đã duyệt)**: migration `0017` (profile ext: degrees/titles/
+  awards/research_fields/allow_forum_reup; reviews thêm purpose/program/allow_forum_reup;
+  unique multi-review D14; trigger auto-sync `professor_courses` từ `course_code`;
+  bucket `professor-avatars`; fix guard `avg_clarity`; view `public_reviews` mới) +
+  UI profile (avatar upload 2MB, form fields mới, trang GV hiện học vị/học hàm/giải
+  thưởng/lĩnh vực/môn đang dạy) + search phân loại (tab purpose, filter trường/khoa/
+  mã HP/tên HP/CTĐT/lĩnh vực NC). Spec: `docs/superpowers/specs/2026-10-03-profcheck-upgrade-design.md`,
+  plan: `docs/superpowers/plans/2026-10-03-dot1-dot2-profile-search.md`
+- ⬜ Đợt 3 (chưa làm): purpose + nửa sao + thang điểm riêng (migration 0018)
+- ⬜ Đợt 4 (chưa làm): comments/saved/tags/attachments/report enum (migration 0019+0020)
+- ⬜ Đợt 5 (chưa làm): P-forum full Reddit-like (migration 0021+0022)
 
 ## 7. Việc cần làm tiếp (next actions)
 
 1. Right-of-reply cho GV, AI summary review, recommend SV↔GV theo tags/research_interests
 2. Report review UI (nút report trên từng review → insert reports)
 3. Custom domain riêng (hiện dùng vercel.app subdomain)
+
+### Ý tưởng tương lai (ý của founder, ghi lại để triển khai thêm)
+
+> Các ý này CHƯA chốt thời điểm — tham khảo khi mở rộng sản phẩm, không cần làm ngay.
+
+1. **Quản lý GPA cho SV + định hướng kế hoạch học tập** — SV nhập điểm từng học phần, hệ thống tính GPA (tích lũy, theo kỳ), dự đoán GPA mục tiêu, gợi ý lộ trình học / môn cần cải thiện, cảnh báo nợ môn, tư vấn chọn môn theo GPA hiện tại.
+2. **Tìm bạn cùng đội (teammate) cho các cuộc thi & nghiên cứu khoa học** — SV đăng/gia nhập nhóm theo cuộc thi (Olympic, khởi nghiệp, NCKH SV...), match theo kỹ năng/ngành/mục tiêu, có board công khai + hệ thống xác nhận nhóm.
+3. **GV đăng bài tìm SV tham gia dự án, giới thiệu cuộc thi** — ngoài Opportunities (NCKH/KLTN/thực tập), GV có thể đăng các bài tuyển thành viên dự án nghiên cứu, giới thiệu cuộc thi đang diễn ra, tìm SV đồng hành nghiên cứu — mở rộng mô hình Opportunities hiện có (thêm loại tin + rich content).
+4. **AI đề xuất giảng viên hướng dẫn (GvHD) phù hợp** — khi SV cần làm khóa luận tốt nghiệp / thực tập giữa khóa / NCKH, AI gợi ý GV phù hợp dựa trên: lĩnh vực đề tài ↔ `research_interests` của GV, điểm review (nhiệt tình, phản hồi, công bằng khi hướng dẫn), trạng thái `accepting_students`/slot còn trống, đánh giá về vai trò hướng dẫn (Phase 3). Dùng edge function + LLM sau khi có đủ dữ liệu hồ sơ GV.
 
 ### CI/CD (đã setup 2026-08-26)
 - **GitHub ↔ Vercel connected**: push lên `master` → auto-deploy production

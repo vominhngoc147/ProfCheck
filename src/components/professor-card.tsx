@@ -16,12 +16,22 @@ export function avatarColor(name: string) {
   return AVATAR_COLORS[h % AVATAR_COLORS.length];
 }
 
-export function Avatar({ name, size = "md" }: { name: string; size?: "md" | "lg" | "xl" }) {
+export function Avatar({ name, size = "md", src }: { name: string; size?: "md" | "lg" | "xl"; src?: string | null }) {
   const sizes = {
     md: "h-11 w-11 text-sm",
     lg: "h-16 w-16 text-xl",
     xl: "h-20 w-20 text-2xl",
   };
+  if (src) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt={name}
+        className={`shrink-0 rounded-full object-cover ${sizes[size]}`}
+      />
+    );
+  }
   return (
     <span
       className={`flex shrink-0 items-center justify-center rounded-full font-bold text-white ${sizes[size]} ${avatarColor(name)}`}
@@ -36,6 +46,7 @@ export type ProfessorCardData = {
   slug: string;
   full_name: string;
   academic_title: string | null;
+  avatar_url?: string | null;
   source_status: string;
   review_count: number;
   avg_overall: number | null;
@@ -56,7 +67,7 @@ export function ProfessorCard({
       className="card flex items-center justify-between gap-4 p-4 transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
       <div className="flex min-w-0 items-center gap-3">
-        <Avatar name={professor.full_name} />
+        <Avatar name={professor.full_name} src={professor.avatar_url} />
         <div className="min-w-0">
           <p className="truncate font-semibold text-zinc-900 dark:text-zinc-50">
             {professor.academic_title ? `${professor.academic_title}. ` : ""}

@@ -139,6 +139,51 @@ export async function updateProfessorProfileAction(
   const academicTitle = String(formData.get("academic_title") ?? "").trim();
   const bio = String(formData.get("bio") ?? "").trim();
   const researchRaw = String(formData.get("research_interests") ?? "");
+  const fieldsRaw = String(formData.get("research_fields") ?? "");
+  const degreesRaw = String(formData.get("degrees") ?? "");
+  const titlesRaw = String(formData.get("titles") ?? "");
+  const awardsRaw = String(formData.get("awards") ?? "");
+  const allowReup = formData.get("allow_forum_reup") !== "off";
+
+  const splitList = (s: string) =>
+    s
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .slice(0, 30);
+
+  // awards: each line "year | title | org" (year/org optional)
+  const awards = awardsRaw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, 30)
+    .map((line) => {
+      const parts = line.split("|").map((p) => p.trim());
+      if (parts.length === 1) return { title: parts[0] };
+      if (parts.length === 2) return { year: parts[0], title: parts[1] };
+      return { year: parts[0], title: parts[1], org: parts.slice(2).join(" | ") };
+    })
+    .filter((a) => a.title);
+
+  let avatarUrl: string | null | undefined;
+  const avatarFile = formData.get("avatar");
+  if (avatarFile instanceof File && avatarFile.size > 0) {
+    if (avatarFile.size > 2 * 1024 * 1024)
+      return { status: "error", error: "avatar_too_big" };
+    if (!/^image\/(jpeg|png|webp)$/.test(avatarFile.type))
+      return { status: "error", error: "avatar_invalid" };
+    const ext = avatarFile.type.split("/")[1].replace("jpeg", "jpg");
+    const path = `${professor.id}/avatar-${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("professor-avatars")
+      .upload(path, avatarFile, { contentType: avatarFile.type, upsert: true });
+    if (uploadError) return { status: "error", error: "avatar_failed" };
+    const { data } = supabase.storage
+      .from("professor-avatars")
+      .getPublicUrl(path);
+    avatarUrl = data.publicUrl;
+  }
 
   const { error } = await supabase
     .from("professors")
@@ -149,6 +194,12 @@ export async function updateProfessorProfileAction(
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
+      research_fields: splitList(fieldsRaw),
+      degrees: splitList(degreesRaw),
+      titles: splitList(titlesRaw),
+      awards,
+      allow_forum_reup: allowReup,
+      ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
     })
     .eq("id", professor.id);
 
