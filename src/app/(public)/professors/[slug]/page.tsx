@@ -20,6 +20,7 @@ type PublicReview = {
   rating_support: number | null;
   purpose: string;
   program: string | null;
+  allow_forum_reup: boolean;
   attendance_required: boolean | null;
   textbook_used: boolean | null;
   for_credit: boolean | null;
@@ -75,8 +76,9 @@ export default async function ProfessorPage({
   const { data: professor, error: profError } = await supabase
     .from("professors")
     .select(
-      `id, slug, full_name, academic_title, bio, avatar_url, source_status,
+       `id, slug, full_name, academic_title, bio, avatar_url, source_status,
        degrees, titles, awards, research_fields, research_interests,
+       allow_forum_reup,
        review_count, avg_overall, avg_difficulty, avg_fairness, avg_clarity, would_take_again_pct,
        faculty_id`
     )
@@ -90,7 +92,7 @@ export default async function ProfessorPage({
       supabase
         .from("public_reviews")
         .select(
-          "id, rating_overall, rating_difficulty, rating_fairness, rating_clarity, rating_expertise, rating_support, purpose, program, attendance_required, textbook_used, for_credit, would_take_again, is_anonymous, author_name, author_id, content, tags, course_code, created_at"
+          "id, rating_overall, rating_difficulty, rating_fairness, rating_clarity, rating_expertise, rating_support, purpose, program, allow_forum_reup, attendance_required, textbook_used, for_credit, would_take_again, is_anonymous, author_name, author_id, content, tags, course_code, created_at"
         )
         .eq("professor_id", professor.id)
         .eq("status", "approved")
@@ -570,6 +572,7 @@ export default async function ProfessorPage({
                     loggedIn={!!currentUserId}
                     canComment={canComment}
                     professorSlug={professor.slug}
+                    profAllowReup={professor.allow_forum_reup ?? true}
                   />
                 ))}
               </div>
@@ -593,6 +596,7 @@ function ReviewCard({
   loggedIn,
   canComment,
   professorSlug,
+  profAllowReup,
 }: {
   review: PublicReview;
   dict: Dictionary;
@@ -611,6 +615,7 @@ function ReviewCard({
   loggedIn: boolean;
   canComment: boolean;
   professorSlug: string;
+  profAllowReup: boolean;
 }) {
   const programLabel = programLabelOf(review.program, dict);
   const images = attachments.filter((a) => a.file_type === "image");
@@ -627,6 +632,15 @@ function ReviewCard({
           </span>
         </div>
         <div className="flex items-center gap-3">
+          {review.allow_forum_reup && profAllowReup && (
+            <Link
+              href={`/forum/new?reup=${review.id}`}
+              className="text-xs text-zinc-400 hover:text-violet-500 dark:text-zinc-500"
+              title={dict.forum.reupTitle}
+            >
+              🔁 {dict.forum.reupButton}
+            </Link>
+          )}
           <SaveReviewButton
             reviewId={review.id}
             initialSaved={saved}

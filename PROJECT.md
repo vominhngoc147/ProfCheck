@@ -369,7 +369,16 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
   actions `social.ts` (comment/save) + form (tag riêng, upload ≤5 ảnh ≤5MB,
   ≤3 file PDF/DOC/PPT ≤10MB) + thread phản hồi/lưu/gallery trong ReviewCard +
   trang `/me/saved`. Plan: `docs/superpowers/plans/2026-10-03-dot4-review-social.md`
-- ⬜ Đợt 5 (chưa làm): P-forum full Reddit-like (migration 0021+0022)
+- ✅ **Đợt 5 (2026-10-03)**: migrations `0021` (forum_tags/topics/topic_tags/
+  posts/comments/votes + RLS + trigger vote_score/comment_count) + `0022`
+  (guard reup D20 + views `public_forum_posts/comments`) + actions `forum.ts`
+  (tag/topic/post/reup-snapshot/comment-depth-3/vote-toggle/delete) +
+  routes `/forum` (sort hot/new/top + lọc topic), `/forum/new` (3 tab
+  post/topic/tag + reup prefill `?reup=`), `/forum/[topic]`,
+  `/forum/post/[id]` (nested comment + vote) + nav + nút reup trên ReviewCard.
+  Smoke test boot server thật: `/forum` 200, `/forum/new` 200, `/search` 200,
+  post giả 404, trang GV thật 200, `/` 200.
+  Plan: `docs/superpowers/plans/2026-10-03-dot5-pforum.md`
 
 ## 7. Việc cần làm tiếp (next actions)
 
