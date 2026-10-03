@@ -381,6 +381,9 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
   Smoke test boot server thật: `/forum` 200, `/forum/new` 200, `/search` 200,
   post giả 404, trang GV thật 200, `/` 200.
   Plan: `docs/superpowers/plans/2026-10-03-dot5-pforum.md`
+- ✅ **Docs cộng đồng (2026-10-03)**: viết lại `README.md` kiểu wiki (badges, demo,
+  quickstart 5 phút, FAQ, roadmap) + `.github/CONTRIBUTING.md` (branch `master`,
+  workflow PR, 6 luật migration, checklist, style, security) theo mẫu VeriTrade
 
 ## 7. Việc cần làm tiếp (next actions)
 
