@@ -1,6 +1,11 @@
 -- Migration 0018: purpose-based ratings + half-star scale (dot 3)
 -- D13: 5 stars with 0.5 steps (0.5-5.0). D15/D16: per-purpose criteria.
 
+-- ===== 0. drop dependent view first (else ALTER TYPE fails with
+-- "cannot alter type of a column used by a view or rule").
+-- Re-created in step 9 below. =====
+drop view if exists public.public_reviews;
+
 -- ===== 1. rating cols smallint -> numeric(3,1) =====
 alter table public.reviews
   alter column rating_overall type numeric(3,1) using rating_overall::numeric,
