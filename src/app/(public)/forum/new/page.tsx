@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/auth";
 import { getDictionary } from "@/i18n";
 import { ForumPostForm } from "@/components/forum-post-form";
 
@@ -13,22 +14,14 @@ export default async function ForumNewPage({
   const dict = await getDictionary();
   const supabase = await createClient();
 
-  const [{ data: topics }, { data: tags }, { data: auth }] = await Promise.all([
+  const [{ data: topics }, { data: tags }, profile] = await Promise.all([
     supabase.from("forum_topics").select("id, slug, title").order("title"),
     supabase.from("forum_tags").select("id, name_vi").order("name_vi"),
-    supabase.auth.getUser(),
+    getCurrentProfile(),
   ]);
 
-  let verification: string | null = null;
-  if (auth?.user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("verification")
-      .eq("id", auth.user.id)
-      .single();
-    verification = profile?.verification ?? null;
-  }
-  const canPost = !!auth?.user && verification !== null && verification !== "none";
+  const verification = profile?.verification ?? null;
+  const canPost = !!profile && verification !== "none";
 
   let reup: {
     reviewId: string;

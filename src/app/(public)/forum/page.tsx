@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserId } from "@/lib/auth";
 import { getDictionary, getLocale } from "@/i18n";
 import { ForumVote } from "@/components/forum-vote";
 
@@ -21,9 +22,9 @@ export default async function ForumPage({
   const locale = await getLocale();
   const supabase = await createClient();
 
-  const [{ data: topics }, { data: auth }] = await Promise.all([
+  const [{ data: topics }, currentUserId] = await Promise.all([
     supabase.from("forum_topics").select("id, slug, title").order("title"),
-    supabase.auth.getUser(),
+    getCurrentUserId(),
   ]);
 
   let topicId: string | null = null;
@@ -51,11 +52,11 @@ export default async function ForumPage({
 
   const postIds = ranked.map((p) => p.id as string);
   const voteMap = new Map<string, number>();
-  if (auth?.user && postIds.length > 0) {
+  if (currentUserId && postIds.length > 0) {
     const { data: votes } = await supabase
       .from("forum_votes")
       .select("target_id, value")
-      .eq("user_id", auth.user.id)
+      .eq("user_id", currentUserId)
       .eq("target_type", "post")
       .in("target_id", postIds);
     for (const v of votes ?? []) voteMap.set(v.target_id as string, v.value as number);
@@ -141,7 +142,7 @@ export default async function ForumPage({
               postId={p.id as string}
               score={p.vote_score as number}
               myVote={voteMap.get(p.id as string) ?? null}
-              loggedIn={!!auth?.user}
+              loggedIn={!!currentUserId}
             />
             <div className="min-w-0 flex-1">
               <Link

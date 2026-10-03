@@ -15,43 +15,37 @@ export default async function SchoolsPage() {
 
   const schoolIds = (schools ?? []).map((s) => s.id);
 
-  const [profCounts, reviewCounts] = await Promise.all([
+  // One professors fetch serves both counters (was 2 identical queries before).
+  const { data: allProfs } =
     schoolIds.length > 0
-      ? supabase
+      ? await supabase
           .from("professors")
-          .select("school_id")
+          .select("id, school_id")
           .in("school_id", schoolIds)
-          .then(({ data }) => {
-            const map = new Map<string, number>();
-            for (const p of data ?? [])
-              map.set(p.school_id, (map.get(p.school_id) ?? 0) + 1);
-            return map;
-          })
-      : Promise.resolve(new Map<string, number>()),
-    schoolIds.length > 0
-      ? (async () => {
-          const { data: profs } = await supabase
-            .from("professors")
-            .select("id, school_id")
-            .in("school_id", schoolIds);
-          const idToSchool = new Map<string, string>();
-          for (const p of profs ?? []) idToSchool.set(p.id, p.school_id);
-          const profIds = (profs ?? []).map((p) => p.id);
-          if (profIds.length === 0) return new Map<string, number>();
-          const { data: reviews } = await supabase
-            .from("reviews")
-            .select("professor_id")
-            .eq("status", "approved")
-            .in("professor_id", profIds);
-          const map = new Map<string, number>();
-          for (const r of reviews ?? []) {
-            const sid = idToSchool.get(r.professor_id);
-            if (sid) map.set(sid, (map.get(sid) ?? 0) + 1);
-          }
-          return map;
-        })()
-      : Promise.resolve(new Map<string, number>()),
-  ]);
+      : { data: [] };
+
+  const profCounts = new Map<string, number>();
+  const idToSchool = new Map<string, string>();
+  for (const p of allProfs ?? []) {
+    profCounts.set(p.school_id, (profCounts.get(p.school_id) ?? 0) + 1);
+    idToSchool.set(p.id, p.school_id);
+  }
+
+  const profIds = (allProfs ?? []).map((p) => p.id);
+  const { data: approvedReviews } =
+    profIds.length > 0
+      ? await supabase
+          .from("reviews")
+          .select("professor_id")
+          .eq("status", "approved")
+          .in("professor_id", profIds)
+      : { data: [] };
+
+  const reviewCounts = new Map<string, number>();
+  for (const r of approvedReviews ?? []) {
+    const sid = idToSchool.get(r.professor_id);
+    if (sid) reviewCounts.set(sid, (reviewCounts.get(sid) ?? 0) + 1);
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">

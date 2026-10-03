@@ -384,6 +384,10 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
 - ✅ **Docs cộng đồng (2026-10-03)**: viết lại `README.md` kiểu wiki (badges, demo,
   quickstart 5 phút, FAQ, roadmap) + `.github/CONTRIBUTING.md` (branch `master`,
   workflow PR, 6 luật migration, checklist, style, security) theo mẫu VeriTrade
+- ✅ **Tăng tốc điều hướng (2026-10-03)**: cache auth theo request (`getCurrentUser`,
+  `getCurrentProfile` qua `cache()` — bớt 2–3 roundtrip `getUser()` mỗi trang),
+  trang Trường gộp 2 query `professors` trùng thành 1, thêm skeleton `loading.tsx`
+  toàn app. Giữ nguyên nhãn "Trường" theo ý founder
 
 ## 7. Việc cần làm tiếp (next actions)
 

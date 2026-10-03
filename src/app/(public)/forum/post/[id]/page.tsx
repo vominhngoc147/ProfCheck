@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/auth";
 import { getDictionary, getLocale } from "@/i18n";
 import { StarRating } from "@/components/star-rating";
 import { ForumVote } from "@/components/forum-vote";
@@ -31,29 +32,20 @@ export default async function ForumPostPage({
     .single();
   if (!post) notFound();
 
-  const [{ data: comments }, { data: auth }] = await Promise.all([
+  const [{ data: comments }, profile] = await Promise.all([
     supabase
       .from("public_forum_comments")
       .select("id, parent_id, author_id, author_name, content, vote_score, created_at")
       .eq("post_id", id)
       .order("created_at", { ascending: true })
       .limit(500),
-    supabase.auth.getUser(),
+    getCurrentProfile(),
   ]);
 
-  const currentUserId = auth?.user?.id ?? null;
-  let isStaff = false;
-  let verification: string | null = null;
-  if (currentUserId) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("verification, role")
-      .eq("id", currentUserId)
-      .single();
-    verification = profile?.verification ?? null;
-    isStaff = profile?.role === "admin" || profile?.role === "moderator";
-  }
-  const canComment = !!currentUserId && verification !== null && verification !== "none";
+  const currentUserId = profile?.id ?? null;
+  const verification = profile?.verification ?? null;
+  const isStaff = profile?.role === "admin" || profile?.role === "moderator";
+  const canComment = !!currentUserId && verification !== "none";
 
   const commentIds = (comments ?? []).map((c) => c.id as string);
   const voteMap = new Map<string, number>();

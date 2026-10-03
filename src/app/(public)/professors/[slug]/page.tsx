@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile } from "@/lib/auth";
 import { getDictionary, getLocale, interpolate } from "@/i18n";
 import { StarRating, ScoreBadge } from "@/components/star-rating";
 import { Avatar } from "@/components/professor-card";
@@ -87,7 +88,7 @@ export default async function ProfessorPage({
 
   if (profError || !professor) notFound();
 
-  const [{ data: reviews }, { data: replies }, { data: faculty }, { data: auth }, { data: taught }] =
+  const [{ data: reviews }, { data: replies }, { data: faculty }, profile, { data: taught }] =
     await Promise.all([
       supabase
         .from("public_reviews")
@@ -108,7 +109,7 @@ export default async function ProfessorPage({
             .eq("id", professor.faculty_id)
             .single()
         : Promise.resolve({ data: null }),
-      supabase.auth.getUser(),
+      getCurrentProfile(),
       supabase
         .from("professor_courses")
         .select("courses(code, name_vi)")
@@ -162,22 +163,14 @@ export default async function ProfessorPage({
     attachmentMap.get(a.review_id)!.push(a);
   }
 
-  let verification: string | null = null;
-  if (auth?.user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("verification")
-      .eq("id", auth.user.id)
-      .single();
-    verification = profile?.verification ?? null;
-  }
-  const authState = !auth?.user
+  const verification = profile?.verification ?? null;
+  const authState = !profile
     ? "logged_out"
     : verification === "none"
       ? "unverified"
       : "ok";
 
-  const currentUserId = auth?.user?.id ?? null;
+  const currentUserId = profile?.id ?? null;
   const canComment = authState === "ok";
   let savedIds = new Set<string>();
   let ownCommentIds = new Set<string>();

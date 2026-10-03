@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,20 +9,37 @@ export type CurrentProfile = {
   verification: string;
 };
 
-export async function getCurrentProfile(): Promise<CurrentProfile | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+// Cached per request: Header + page share ONE auth resolution instead of
+// 3-4 duplicate getUser() roundtrips to Supabase Auth per navigation.
+export const getCurrentUser = cache(
+  async (): Promise<{ id: string; email?: string } | null> => {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
+    return { id: user.id, email: user.email };
+  }
+);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, display_name, role, verification")
-    .eq("id", user.id)
-    .maybeSingle();
-  return profile ?? null;
-}
+export const getCurrentUserId = cache(async (): Promise<string | null> => {
+  const user = await getCurrentUser();
+  return user?.id ?? null;
+});
+
+export const getCurrentProfile = cache(
+  async (): Promise<CurrentProfile | null> => {
+    const userId = await getCurrentUserId();
+    if (!userId) return null;
+    const supabase = await createClient();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id, display_name, role, verification")
+      .eq("id", userId)
+      .maybeSingle();
+    return profile ?? null;
+  }
+);
 
 export async function requireProfile(): Promise<CurrentProfile> {
   const profile = await getCurrentProfile();

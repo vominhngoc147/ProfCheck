@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentProfile } from "@/lib/auth";
+import { getCurrentProfile, getCurrentUser } from "@/lib/auth";
 import { getDictionary, getLocale, interpolate } from "@/i18n";
 import { LocaleSwitcher } from "./locale-switcher";
 import { signOutAction } from "@/app/actions/auth";
@@ -8,12 +7,8 @@ import { signOutAction } from "@/app/actions/auth";
 export async function Header() {
   const dict = await getDictionary();
   const locale = await getLocale();
-  const supabase = await createClient();
-  const [
-    { data: { user } },
-    profile,
-  ] = await Promise.all([
-    supabase.auth.getUser(),
+  const [user, profile] = await Promise.all([
+    getCurrentUser(),
     getCurrentProfile(),
   ]);
 
