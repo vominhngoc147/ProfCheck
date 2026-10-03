@@ -95,6 +95,38 @@ export default async function SchoolDetailPage({
         </div>
       </div>
 
+      {/* SCOPED SEARCH: jumps to /search with this school preset */}
+      <form
+        method="GET"
+        action="/search"
+        className="card mt-6 flex flex-col gap-2 p-4 sm:flex-row sm:items-end"
+      >
+        <input type="hidden" name="school" value={school.slug} />
+        <label className="flex flex-1 flex-col gap-1 text-xs">
+          {dict.search.nameLabel}
+          <input
+            type="text"
+            name="q"
+            placeholder={dict.home.searchPlaceholder}
+            className="input"
+          />
+        </label>
+        <label className="flex flex-1 flex-col gap-1 text-xs">
+          {dict.search.facultyLabel}
+          <select name="faculty" defaultValue="" className="input">
+            <option value="">—</option>
+            {(faculties ?? []).map((f) => (
+              <option key={f.id} value={f.slug}>
+                {locale === "en" && f.name_en ? f.name_en : f.name_vi}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="submit" className="btn-primary">
+          {dict.search.filterButton}
+        </button>
+      </form>
+
       {/* FACULTIES */}
       {(faculties ?? []).length > 0 && (
         <section className="mt-10">

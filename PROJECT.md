@@ -388,6 +388,12 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
   `getCurrentProfile` qua `cache()` — bớt 2–3 roundtrip `getUser()` mỗi trang),
   trang Trường gộp 2 query `professors` trùng thành 1, thêm skeleton `loading.tsx`
   toàn app. Giữ nguyên nhãn "Trường" theo ý founder
+- ✅ **Fix sao tổng không cập nhật (2026-10-03, migration 0023)**: nguyên nhân gốc là
+  trigger `trg_prof_owner_guard` revert mọi cập nhật điểm số kể cả từ trigger hệ thống
+  (0/197 GV có stats); sửa bằng `pg_trigger_depth() > 1` cho hệ thống ghi xuyên qua +
+  backfill toàn bộ + gỡ trigger `trg_review_status` ép approved mọi insert (lỗ hổng
+  kiểm duyệt). Đã test end-to-end (insert/delete review thử → stats lên/xuống đúng).
+  Trang Trường có thêm thanh tìm kiếm + lọc khoa, nhảy sang `/search` giữ sẵn trường
 
 ## 7. Việc cần làm tiếp (next actions)
 
