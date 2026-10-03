@@ -361,7 +361,9 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
   thêm `rating_expertise`/`rating_support`; stats trigger + `avg_expertise`/`avg_support`;
   view mới) + form chọn purpose với bộ tiêu chí riêng + StarInput/StarRating nửa sao +
   trang GV tab điểm theo purpose (`?tab=`) + badge purpose/program + fix `course_code`
-  lưu thật + admin `★.repeat` crash. Plan: `docs/superpowers/plans/2026-10-03-dot3-review-purpose-halfstar.md`
+  lưu thật + admin `★.repeat` crash.   Plan: `docs/superpowers/plans/2026-10-03-dot3-review-purpose-halfstar.md`
+  (fix sau deploy: 0018 thiếu DROP VIEW trước ALTER TYPE → CI fail 3 lần;
+  đã sửa + chạy tay `node scripts/migrate.mjs` qua pooler OK, CI xanh)
 - ✅ **Đợt 4 (2026-10-03)**: migrations `0019` (`review_comments` + view
   `public_review_comments` mask ẩn danh, `saved_reviews`, `custom_tags`,
   `review_attachments`, buckets public `review-images`/`review-docs`) + `0020`
