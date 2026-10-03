@@ -10,6 +10,21 @@ type ReviewDict = {
   overallRating: string;
   difficultyRating: string;
   fairnessRating: string;
+  expertiseRating: string;
+  supportRating: string;
+  purposeLabel: string;
+  purposeHocTap: string;
+  purposeNckh: string;
+  purposeKltn: string;
+  purposeTtgk: string;
+  programLabel: string;
+  programEmpty: string;
+  programClc: string;
+  programCttt: string;
+  programDhnnqt: string;
+  programChinhQuy: string;
+  allowReupLabel: string;
+  allowReupHint: string;
   wouldTakeAgain: string;
   anonymous: string;
   anonymousHint: string;
@@ -49,6 +64,8 @@ type WizardDict = {
   courseCodePlaceholder: string;
 };
 
+type Purpose = "hoc_tap" | "nckh" | "kltn" | "ttgk";
+
 function StarInput({
   value,
   onChange,
@@ -57,20 +74,38 @@ function StarInput({
   onChange: (v: number) => void;
 }) {
   return (
-    <div className="flex gap-1.5">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <button
-          key={i}
-          type="button"
-          aria-label={`${i}/5`}
-          onClick={() => onChange(i)}
-          className={`text-4xl leading-none transition-transform hover:scale-115 ${
-            i <= value ? "text-amber-400" : "text-zinc-300 dark:text-zinc-600"
-          }`}
-        >
-          ★
-        </button>
-      ))}
+    <div className="flex items-center gap-1.5">
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((i) => {
+          const fill = Math.max(0, Math.min(1, value - (i - 1)));
+          return (
+            <span key={i} className="relative text-4xl leading-none">
+              <span className="text-zinc-300 dark:text-zinc-600">★</span>
+              <span
+                className="pointer-events-none absolute inset-0 overflow-hidden whitespace-nowrap text-amber-400"
+                style={{ width: `${fill * 100}%` }}
+              >
+                ★
+              </span>
+              <button
+                type="button"
+                aria-label={`${i - 0.5}/5`}
+                onClick={() => onChange(i - 0.5)}
+                className="absolute inset-y-0 left-0 w-1/2 cursor-pointer"
+              />
+              <button
+                type="button"
+                aria-label={`${i}/5`}
+                onClick={() => onChange(i)}
+                className="absolute inset-y-0 right-0 w-1/2 cursor-pointer"
+              />
+            </span>
+          );
+        })}
+      </div>
+      <span className="w-10 text-sm font-semibold text-amber-500">
+        {value > 0 ? value.toFixed(1) : ""}
+      </span>
     </div>
   );
 }
@@ -90,6 +125,8 @@ function TriBool({ name, dict }: { name: string; dict: ReviewDict }) {
     </div>
   );
 }
+
+const PURPOSES: Purpose[] = ["hoc_tap", "nckh", "kltn", "ttgk"];
 
 export function ReviewForm({
   professorSlug,
@@ -111,10 +148,13 @@ export function ReviewForm({
   );
 
   const [step, setStep] = useState(1);
+  const [purpose, setPurpose] = useState<Purpose>("hoc_tap");
   const [overall, setOverall] = useState(0);
   const [clarity, setClarity] = useState(0);
   const [difficulty, setDifficulty] = useState(0);
   const [fairness, setFairness] = useState(0);
+  const [expertise, setExpertise] = useState(0);
+  const [support, setSupport] = useState(0);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   function toggleTag(tag: string) {
@@ -156,8 +196,18 @@ export function ReviewForm({
       </div>
     );
 
+  const showClarity = purpose === "hoc_tap";
+  const showFairness = purpose !== "nckh";
+  const showExpertise = true;
+  const showSupport = purpose !== "hoc_tap";
+
   const step1Ok =
-    overall > 0 && clarity > 0 && difficulty > 0 && fairness > 0;
+    overall > 0 &&
+    difficulty > 0 &&
+    (!showClarity || clarity > 0) &&
+    (!showFairness || fairness > 0) &&
+    (!showExpertise || expertise > 0) &&
+    (!showSupport || support > 0);
 
   const errorMessage =
     state.status === "error"
@@ -168,13 +218,31 @@ export function ReviewForm({
           : dict.ratingRequired
       : null;
 
+  const purposeLabels: Record<Purpose, string> = {
+    hoc_tap: dict.purposeHocTap,
+    nckh: dict.purposeNckh,
+    kltn: dict.purposeKltn,
+    ttgk: dict.purposeTtgk,
+  };
+
   return (
     <form action={formAction} className="flex flex-col gap-5">
       <input type="hidden" name="professorSlug" value={professorSlug} />
+      <input type="hidden" name="purpose" value={purpose} />
       <input type="hidden" name="rating_overall" value={overall || ""} />
-      <input type="hidden" name="rating_clarity" value={clarity || ""} />
       <input type="hidden" name="rating_difficulty" value={difficulty || ""} />
-      <input type="hidden" name="rating_fairness" value={fairness || ""} />
+      {showFairness && (
+        <input type="hidden" name="rating_fairness" value={fairness || ""} />
+      )}
+      {showClarity && (
+        <input type="hidden" name="rating_clarity" value={clarity || ""} />
+      )}
+      {showExpertise && (
+        <input type="hidden" name="rating_expertise" value={expertise || ""} />
+      )}
+      {showSupport && (
+        <input type="hidden" name="rating_support" value={support || ""} />
+      )}
 
       {/* progress */}
       <div className="flex items-center gap-2">
@@ -205,28 +273,52 @@ export function ReviewForm({
         ))}
       </div>
 
-      {/* STEP 1: ratings */}
+      {/* STEP 1: purpose + ratings */}
       {step === 1 && (
         <div className="flex flex-col gap-5">
+          <div>
+            <p className="label">{dict.purposeLabel}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {PURPOSES.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPurpose(p)}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    purpose === p
+                      ? "border-indigo-600 bg-indigo-600 text-white"
+                      : "border-zinc-300 text-zinc-600 hover:border-indigo-400 dark:border-zinc-600 dark:text-zinc-300"
+                  }`}
+                >
+                  {purposeLabels[p]}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {(
             [
-              [dict.overallRating, overall, setOverall],
-              [dict.clarityRating, clarity, setClarity],
-              [dict.difficultyRating, difficulty, setDifficulty],
-              [dict.fairnessRating, fairness, setFairness],
+              [dict.overallRating, overall, setOverall, true],
+              [dict.clarityRating, clarity, setClarity, showClarity],
+              [dict.difficultyRating, difficulty, setDifficulty, true],
+              [dict.fairnessRating, fairness, setFairness, showFairness],
+              [dict.expertiseRating, expertise, setExpertise, showExpertise],
+              [dict.supportRating, support, setSupport, showSupport],
             ] as const
-          ).map(([label, val, set]) => (
-            <div
-              key={label}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700"
-            >
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {label}
-              </span>
-              <StarInput value={val} onChange={set} />
-            </div>
-          ))}
-          {!step1Ok && step === 1 && (
+          )
+            .filter(([, , , show]) => show)
+            .map(([label, val, set]) => (
+              <div
+                key={label}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-zinc-200 p-4 dark:border-zinc-700"
+              >
+                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {label}
+                </span>
+                <StarInput value={val} onChange={set} />
+              </div>
+            ))}
+          {!step1Ok && (
             <button type="button" disabled className="btn-primary self-end opacity-40">
               {wdict.next}
             </button>
@@ -243,7 +335,7 @@ export function ReviewForm({
         </div>
       )}
 
-      {/* STEP 2: course + flags + tags */}
+      {/* STEP 2: course + program + flags + tags */}
       {step === 2 && (
         <div className="flex flex-col gap-5">
           <div>
@@ -251,9 +343,21 @@ export function ReviewForm({
             <input
               type="text"
               name="course_code"
+              maxLength={30}
               placeholder={wdict.courseCodePlaceholder}
               className="input"
             />
+          </div>
+
+          <div>
+            <p className="label">{dict.programLabel}</p>
+            <select name="program" defaultValue="" className="input">
+              <option value="">{dict.programEmpty}</option>
+              <option value="clc">{dict.programClc}</option>
+              <option value="cttt">{dict.programCttt}</option>
+              <option value="dhnnqt">{dict.programDhnnqt}</option>
+              <option value="chinh_quy">{dict.programChinhQuy}</option>
+            </select>
           </div>
 
           <div>
@@ -334,7 +438,7 @@ export function ReviewForm({
         </div>
       )}
 
-      {/* STEP 3: comment + anonymity */}
+      {/* STEP 3: comment + reup + anonymity */}
       {step === 3 && (
         <div className="flex flex-col gap-5">
           <div>
@@ -347,6 +451,22 @@ export function ReviewForm({
               placeholder={dict.contentPlaceholder}
               className="input resize-y"
             />
+          </div>
+
+          <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800/60">
+            <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <input
+                type="checkbox"
+                name="allow_forum_reup"
+                defaultChecked
+                value="on"
+                className="h-4 w-4"
+              />
+              {dict.allowReupLabel}
+            </label>
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              {dict.allowReupHint}
+            </p>
           </div>
 
           <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800/60">

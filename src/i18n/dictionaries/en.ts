@@ -75,6 +75,7 @@ const en: typeof vi = {
     wouldTakeAgain: "Would take again",
     starDistribution: "Star distribution",
     reviewsSection: "Reviews",
+    tabAll: "All",
     writeReview: "Write a review",
     editYourReview: "Edit your review",
     noReviews: "No reviews yet. Be the first!",
@@ -100,6 +101,13 @@ const en: typeof vi = {
     overallRating: "Overall rating",
     difficultyRating: "Difficulty (1 = easy, 5 = very hard)",
     fairnessRating: "Grading fairness",
+    expertiseRating: "Expertise",
+    supportRating: "Supportiveness",
+    purposeLabel: "Review purpose",
+    programLabel: "Program (optional)",
+    programEmpty: "Unknown / other",
+    allowReupLabel: "Allow the community to reup this review to P-forum",
+    allowReupHint: "Turn off if you don't want this review shared to the forum.",
     wouldTakeAgain: "Would you take this professor again?",
     anonymous: "Post as anonymous",
     anonymousHint:
@@ -120,7 +128,7 @@ const en: typeof vi = {
       "Published! Thanks for sharing your experience.",
     alreadyReviewed:
       "You already submitted a review for this professor with the same course/purpose.",
-    ratingRequired: "Please select all three ratings.",
+    ratingRequired: "Please rate all required criteria (half stars allowed).",
     contentTooShort: "Content must be at least 30 characters.",
     professorBlocked:
       "Professor accounts cannot write reviews about colleagues.",
@@ -377,6 +385,8 @@ const en: typeof vi = {
   },
   reviewExtra: {
     clarityRating: "Clear teaching",
+    expertiseLabel: "Expertise",
+    supportLabel: "Supportiveness",
     attendanceLabel: "Attendance mandatory?",
     textbookLabel: "Textbook used?",
     creditLabel: "Taken for credit?",

@@ -14,6 +14,10 @@ type PublicReview = {
   rating_difficulty: number;
   rating_fairness: number;
   rating_clarity: number | null;
+  rating_expertise: number | null;
+  rating_support: number | null;
+  purpose: string;
+  program: string | null;
   attendance_required: boolean | null;
   textbook_used: boolean | null;
   for_credit: boolean | null;
@@ -26,6 +30,24 @@ type PublicReview = {
   created_at: string;
 };
 
+const REVIEW_PURPOSES = ["hoc_tap", "nckh", "kltn", "ttgk"] as const;
+
+function purposeLabelOf(p: string, dict: Dictionary): string {
+  if (p === "hoc_tap") return dict.search.purposeHocTap;
+  if (p === "nckh") return dict.search.purposeNckh;
+  if (p === "kltn") return dict.search.purposeKltn;
+  if (p === "ttgk") return dict.search.purposeTtgk;
+  return p;
+}
+
+function programLabelOf(p: string | null, dict: Dictionary): string | null {
+  if (p === "clc") return dict.search.programClc;
+  if (p === "cttt") return dict.search.programCttt;
+  if (p === "dhnnqt") return dict.search.programDhnnqt;
+  if (p === "chinh_quy") return dict.search.programChinhQuy;
+  return null;
+}
+
 function difficultyLevel(value: number, dict: Dictionary): string {
   if (value <= 2.5) return dict.professor.easy;
   if (value <= 3.5) return dict.professor.moderate;
@@ -34,8 +56,16 @@ function difficultyLevel(value: number, dict: Dictionary): string {
 
 export default async function ProfessorPage({
   params,
+  searchParams,
 }: PageProps<"/professors/[slug]">) {
   const { slug } = await params;
+  const sp = await searchParams;
+  const rawTab = typeof sp.tab === "string" ? sp.tab : "all";
+  const tab =
+    rawTab === "all" ||
+    (REVIEW_PURPOSES as readonly string[]).includes(rawTab)
+      ? rawTab
+      : "all";
   const dict = await getDictionary();
   const locale = await getLocale();
   const supabase = await createClient();
@@ -58,7 +88,7 @@ export default async function ProfessorPage({
       supabase
         .from("public_reviews")
         .select(
-          "id, rating_overall, rating_difficulty, rating_fairness, rating_clarity, attendance_required, textbook_used, for_credit, would_take_again, is_anonymous, author_name, content, tags, course_code, created_at"
+          "id, rating_overall, rating_difficulty, rating_fairness, rating_clarity, rating_expertise, rating_support, purpose, program, attendance_required, textbook_used, for_credit, would_take_again, is_anonymous, author_name, content, tags, course_code, created_at"
         )
         .eq("professor_id", professor.id)
         .eq("status", "approved")
@@ -112,7 +142,8 @@ export default async function ProfessorPage({
 
   const distribution = [1, 2, 3, 4, 5].map((star) => ({
     star,
-    count: reviewList.filter((r) => r.rating_overall === star).length,
+    count: reviewList.filter((r) => Math.round(r.rating_overall) === star)
+      .length,
   }));
   const maxCount = Math.max(1, ...distribution.map((d) => d.count));
   const wtaPct =
@@ -342,6 +373,14 @@ export default async function ProfessorPage({
             ...dict.reviewExtra,
             tagsLabel: dict.tags.label,
             tagLabels: dict.tags,
+            purposeHocTap: dict.search.purposeHocTap,
+            purposeNckh: dict.search.purposeNckh,
+            purposeKltn: dict.search.purposeKltn,
+            purposeTtgk: dict.search.purposeTtgk,
+            programClc: dict.search.programClc,
+            programCttt: dict.search.programCttt,
+            programDhnnqt: dict.search.programDhnnqt,
+            programChinhQuy: dict.search.programChinhQuy,
           }}
           wdict={{
             step1: dict.reviewForm.step1,
@@ -357,109 +396,222 @@ export default async function ProfessorPage({
       </section>
 
       <section className="mt-10">
-        <h2 className="mb-4 text-xl font-semibold">
+        <h2 className="mb-3 text-xl font-semibold">
           {`${dict.professor.reviewsSection} (${reviewList.length})`}
         </h2>
-        <div className="flex flex-col gap-4">
-          {reviewList.length === 0 && (
-            <p className="text-zinc-500 dark:text-zinc-400">
-              {dict.professor.noReviews}
-            </p>
-          )}
-          {reviewList.map((review) => (
-            <article
-              key={review.id}
-              className="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <StarRating value={review.rating_overall} />
-                  <span className="font-medium">
-                    {review.is_anonymous
-                      ? dict.professor.anonymousAuthor
-                      : review.author_name}
-                  </span>
-                </div>
-                <time className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {new Date(review.created_at).toLocaleDateString(locale)}
-                </time>
-              </div>
-              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-                {review.content}
-              </p>
-              {review.course_code && (
-                <p className="mt-2">
-                  <span className="badge bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
-                    📘 {review.course_code}
-                  </span>
-                </p>
-              )}
-              {Array.isArray(review.tags) && review.tags.length > 0 && (
-                <p className="mt-2 flex flex-wrap gap-1.5">
-                  {(review.tags as string[]).map((t) => (
-                    <span
-                      key={t}
-                      className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
-                    >
-                      {dict.tags[t as keyof typeof dict.tags] ?? t}
-                    </span>
-                  ))}
-                </p>
-              )}
-              {replyMap.get(review.id) && (
-                <blockquote className="mt-3 rounded-r-xl border-l-4 border-indigo-400 bg-zinc-50 py-2 pl-3 pr-2 text-sm dark:bg-zinc-800/60">
-                  <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                    {displayName} ↩
-                  </span>
-                  <p className="mt-1 whitespace-pre-line text-zinc-600 dark:text-zinc-300">
-                    {replyMap.get(review.id)!.content as string}
-                  </p>
-                </blockquote>
-              )}
-              <div className="mt-3 flex items-center justify-between">
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
-                  {review.rating_clarity !== null && (
-                    <span>
-                      {dict.reviewExtra.clarityRating}: {review.rating_clarity}/5
-                    </span>
-                  )}
-                  <span>
-                    {dict.professor.difficulty}: {review.rating_difficulty}/5
-                  </span>
-                  <span>
-                    {dict.professor.fairness}: {review.rating_fairness}/5
-                  </span>
-                  {review.would_take_again !== null && (
-                    <span>
-                      {dict.professor.wouldTakeAgain}:{" "}
-                      {review.would_take_again ? dict.professor.yes : dict.professor.no}
-                    </span>
-                  )}
-                  {review.attendance_required !== null && (
-                    <span>
-                      {dict.reviewExtra.attendanceLabel}{" "}
-                      {review.attendance_required ? dict.reviewExtra.yes : dict.reviewExtra.no}
-                    </span>
-                  )}
-                  {review.textbook_used !== null && (
-                    <span>
-                      {dict.reviewExtra.textbookLabel}{" "}
-                      {review.textbook_used ? dict.reviewExtra.yes : dict.reviewExtra.no}
-                    </span>
-                  )}
-                  {review.for_credit !== null && (
-                    <span>
-                      {dict.reviewExtra.creditLabel}{" "}
-                      {review.for_credit ? dict.reviewExtra.yes : dict.reviewExtra.no}
-                    </span>
-                  )}
-                </div>
-                <ReportButton reviewId={review.id} dict={dict.reportUi} />
-              </div>
-            </article>
-          ))}
+        <div className="mb-4 flex flex-wrap gap-1.5">
+          <Link
+            href={`/professors/${professor.slug}`}
+            className={`rounded-full border px-3 py-1 text-xs font-medium ${tab === "all" ? "border-indigo-600 bg-indigo-600 text-white" : "border-zinc-300 text-zinc-600 dark:border-zinc-600 dark:text-zinc-300"}`}
+          >
+            {dict.professor.tabAll} ({reviewList.length})
+          </Link>
+          {REVIEW_PURPOSES.map((p) => {
+            const n = reviewList.filter((r) => r.purpose === p).length;
+            if (n === 0) return null;
+            return (
+              <Link
+                key={p}
+                href={`/professors/${professor.slug}?tab=${p}`}
+                className={`rounded-full border px-3 py-1 text-xs font-medium ${tab === p ? "border-indigo-600 bg-indigo-600 text-white" : "border-zinc-300 text-zinc-600 dark:border-zinc-600 dark:text-zinc-300"}`}
+              >
+                {purposeLabelOf(p, dict)} ({n})
+              </Link>
+            );
+          })}
         </div>
+        {(() => {
+          const visible =
+            tab === "all"
+              ? reviewList
+              : reviewList.filter((r) => r.purpose === tab);
+          const avg = (f: (r: PublicReview) => number | null) => {
+            const vals = visible.map(f).filter((v): v is number => v !== null);
+            if (vals.length === 0) return null;
+            return vals.reduce((a, b) => a + b, 0) / vals.length;
+          };
+          const tabOverall = avg((r) => r.rating_overall);
+          const tabExpertise = avg((r) => r.rating_expertise);
+          const tabSupport = avg((r) => r.rating_support);
+          const tabDifficulty = avg((r) => r.rating_difficulty);
+          const tabFairness = avg((r) => r.rating_fairness);
+          const tabClarity = avg((r) => r.rating_clarity);
+          return (
+            <>
+              {tab !== "all" && (
+                <div className="mb-4 flex flex-wrap items-center gap-2 rounded-xl bg-indigo-50 p-4 dark:bg-indigo-950/40">
+                  <StarRating value={tabOverall ?? 0} />
+                  <span className="text-lg font-bold">
+                    {tabOverall?.toFixed(1) ?? "–"}
+                  </span>
+                  <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {purposeLabelOf(tab, dict)} · {visible.length}
+                  </span>
+                  {[
+                    [dict.reviewExtra.clarityRating, tabClarity],
+                    [dict.professor.difficulty, tabDifficulty],
+                    [dict.professor.fairness, tabFairness],
+                    [dict.reviewExtra.expertiseLabel, tabExpertise],
+                    [dict.reviewExtra.supportLabel, tabSupport],
+                  ]
+                    .filter(([, v]) => v !== null)
+                    .map(([label, v]) => (
+                      <span
+                        key={label as string}
+                        className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                      >
+                        {label}: {(v as number).toFixed(1)}
+                      </span>
+                    ))}
+                </div>
+              )}
+              <div className="flex flex-col gap-4">
+                {visible.length === 0 && (
+                  <p className="text-zinc-500 dark:text-zinc-400">
+                    {dict.professor.noReviews}
+                  </p>
+                )}
+                {visible.map((review) => (
+                  <ReviewCard
+                    key={review.id}
+                    review={review}
+                    dict={dict}
+                    locale={locale}
+                    displayName={displayName}
+                    reply={replyMap.get(review.id)}
+                  />
+                ))}
+              </div>
+            </>
+          );
+        })()}
       </section>
     </div>
+  );
+}
+
+function ReviewCard({
+  review,
+  dict,
+  locale,
+  displayName,
+  reply,
+}: {
+  review: PublicReview;
+  dict: Dictionary;
+  locale: string;
+  displayName: string;
+  reply?: { content: string };
+}) {
+  const programLabel = programLabelOf(review.program, dict);
+  return (
+    <article className="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <StarRating value={review.rating_overall} />
+          <span className="font-medium">
+            {review.is_anonymous
+              ? dict.professor.anonymousAuthor
+              : review.author_name}
+          </span>
+        </div>
+        <time className="text-xs text-zinc-500 dark:text-zinc-400">
+          {new Date(review.created_at).toLocaleDateString(locale)}
+        </time>
+      </div>
+      <p className="mt-2 flex flex-wrap gap-1.5">
+        <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
+          {purposeLabelOf(review.purpose, dict)}
+        </span>
+        {review.course_code && (
+          <span className="badge bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
+            📘 {review.course_code}
+          </span>
+        )}
+        {programLabel && (
+          <span className="rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700 dark:bg-teal-950/60 dark:text-teal-300">
+            {programLabel}
+          </span>
+        )}
+      </p>
+      <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+        {review.content}
+      </p>
+      {Array.isArray(review.tags) && review.tags.length > 0 && (
+        <p className="mt-2 flex flex-wrap gap-1.5">
+          {(review.tags as string[]).map((t) => (
+            <span
+              key={t}
+              className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300"
+            >
+              {dict.tags[t as keyof typeof dict.tags] ?? t}
+            </span>
+          ))}
+        </p>
+      )}
+      {reply && (
+        <blockquote className="mt-3 rounded-r-xl border-l-4 border-indigo-400 bg-zinc-50 py-2 pl-3 pr-2 text-sm dark:bg-zinc-800/60">
+          <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+            {displayName} ↩
+          </span>
+          <p className="mt-1 whitespace-pre-line text-zinc-600 dark:text-zinc-300">
+            {reply.content}
+          </p>
+        </blockquote>
+      )}
+      <div className="mt-3 flex items-center justify-between">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <span>
+            {dict.reviewForm.overallRating}: {review.rating_overall}/5
+          </span>
+          {review.rating_clarity !== null && (
+            <span>
+              {dict.reviewExtra.clarityRating}: {review.rating_clarity}/5
+            </span>
+          )}
+          <span>
+            {dict.professor.difficulty}: {review.rating_difficulty}/5
+          </span>
+          <span>
+            {dict.professor.fairness}: {review.rating_fairness}/5
+          </span>
+          {review.rating_expertise !== null && (
+            <span>
+              {dict.reviewExtra.expertiseLabel}: {review.rating_expertise}/5
+            </span>
+          )}
+          {review.rating_support !== null && (
+            <span>
+              {dict.reviewExtra.supportLabel}: {review.rating_support}/5
+            </span>
+          )}
+          {review.would_take_again !== null && (
+            <span>
+              {dict.professor.wouldTakeAgain}:{" "}
+              {review.would_take_again ? dict.professor.yes : dict.professor.no}
+            </span>
+          )}
+          {review.attendance_required !== null && (
+            <span>
+              {dict.reviewExtra.attendanceLabel}{" "}
+              {review.attendance_required ? dict.reviewExtra.yes : dict.reviewExtra.no}
+            </span>
+          )}
+          {review.textbook_used !== null && (
+            <span>
+              {dict.reviewExtra.textbookLabel}{" "}
+              {review.textbook_used ? dict.reviewExtra.yes : dict.reviewExtra.no}
+            </span>
+          )}
+          {review.for_credit !== null && (
+            <span>
+              {dict.reviewExtra.creditLabel}{" "}
+              {review.for_credit ? dict.reviewExtra.yes : dict.reviewExtra.no}
+            </span>
+          )}
+        </div>
+        <ReportButton reviewId={review.id} dict={dict.reportUi} />
+      </div>
+    </article>
   );
 }

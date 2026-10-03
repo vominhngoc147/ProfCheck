@@ -30,10 +30,19 @@ export default async function MePage() {
   const { data: reviews } = await supabase
     .from("reviews")
     .select(
-      "id, status, rating_overall, content, created_at, professors(full_name, slug)"
+      "id, status, rating_overall, purpose, course_code, program, content, created_at, professors(full_name, slug)"
     )
     .eq("author_id", profile.id)
     .order("created_at", { ascending: false });
+
+  const purposeName = (p: string) =>
+    p === "hoc_tap"
+      ? dict.search.purposeHocTap
+      : p === "nckh"
+        ? dict.search.purposeNckh
+        : p === "kltn"
+          ? dict.search.purposeKltn
+          : dict.search.purposeTtgk;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -72,6 +81,16 @@ export default async function MePage() {
               </div>
               <p className="mt-2 whitespace-pre-line text-sm text-zinc-700 dark:text-zinc-300">
                 {r.content}
+              </p>
+              <p className="mt-2 flex flex-wrap gap-1.5 text-xs">
+                <span className="rounded-full bg-violet-50 px-2 py-0.5 font-medium text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
+                  {purposeName(r.purpose as string)}
+                </span>
+                {(r.course_code as string | null) && (
+                  <span className="rounded-full bg-sky-50 px-2 py-0.5 font-medium text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
+                    📘 {r.course_code as string}
+                  </span>
+                )}
               </p>
               {prof && (
                 <Link

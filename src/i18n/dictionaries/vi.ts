@@ -73,6 +73,7 @@ const vi = {
     wouldTakeAgain: "Sẽ chọn lại",
     starDistribution: "Phân phối sao",
     reviewsSection: "Đánh giá",
+    tabAll: "Tất cả",
     writeReview: "Viết đánh giá",
     editYourReview: "Sửa đánh giá của bạn",
     noReviews: "Chưa có đánh giá nào. Hãy là người đầu tiên!",
@@ -98,6 +99,13 @@ const vi = {
     overallRating: "Điểm tổng thể",
     difficultyRating: "Độ khó (1 = dễ, 5 = rất khó)",
     fairnessRating: "Độ công bằng khi chấm điểm",
+    expertiseRating: "Chuyên môn",
+    supportRating: "Độ hỗ trợ và nhiệt tình",
+    purposeLabel: "Bạn đánh giá với mục đích",
+    programLabel: "Hệ đào tạo (CTĐT, tùy chọn)",
+    programEmpty: "Không rõ / khác",
+    allowReupLabel: "Cho phép cộng đồng reup bài này lên P-forum",
+    allowReupHint: "Tắt nếu bạn không muốn bài review này được chia sẻ lại lên forum.",
     wouldTakeAgain: "Bạn có chọn lại giảng viên này không?",
     anonymous: "Đăng với tư cách ẩn danh",
     anonymousHint:
@@ -118,7 +126,7 @@ const vi = {
       "Đã đăng công khai! Cảm ơn bạn đã chia sẻ trải nghiệm.",
     alreadyReviewed:
       "Bạn đã gửi đánh giá cho giảng viên này với cùng học phần/mục đích rồi.",
-    ratingRequired: "Vui lòng chọn đủ cả 3 mức điểm.",
+    ratingRequired: "Vui lòng chấm đủ các tiêu chí bắt buộc (chọn được nửa sao).",
     contentTooShort: "Nội dung phải có ít nhất 30 ký tự.",
     professorBlocked:
       "Tài khoản giảng viên không thể viết đánh giá về đồng nghiệp.",
@@ -373,6 +381,8 @@ const vi = {
   },
   reviewExtra: {
     clarityRating: "Giảng dạy dễ hiểu",
+    expertiseLabel: "Chuyên môn",
+    supportLabel: "Hỗ trợ / nhiệt tình",
     attendanceLabel: "Điểm danh bắt buộc?",
     textbookLabel: "Có dùng giáo trình?",
     creditLabel: "Học có tính tín chỉ?",

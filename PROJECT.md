@@ -349,7 +349,7 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
 - ⬜ Việc đầu sau khi đăng ký user đầu tiên — promote thành admin:
   `update public.profiles set role='admin' where id='<user-id>';`
 - Git repo: https://github.com/vominhngoc147/ProfCheck (private)
-- ✅ **Đợt 1+2 (2026-10-03, đã duyệt)**: migration `0017` (profile ext: degrees/titles/
+- ✅ **Đợt 1+2 (2026-10-03)**: migration `0017` (profile ext: degrees/titles/
   awards/research_fields/allow_forum_reup; reviews thêm purpose/program/allow_forum_reup;
   unique multi-review D14; trigger auto-sync `professor_courses` từ `course_code`;
   bucket `professor-avatars`; fix guard `avg_clarity`; view `public_reviews` mới) +
@@ -357,7 +357,11 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
   thưởng/lĩnh vực/môn đang dạy) + search phân loại (tab purpose, filter trường/khoa/
   mã HP/tên HP/CTĐT/lĩnh vực NC). Spec: `docs/superpowers/specs/2026-10-03-profcheck-upgrade-design.md`,
   plan: `docs/superpowers/plans/2026-10-03-dot1-dot2-profile-search.md`
-- ⬜ Đợt 3 (chưa làm): purpose + nửa sao + thang điểm riêng (migration 0018)
+- ✅ **Đợt 3 (2026-10-03)**: migration `0018` (rating cols → numeric nửa sao 0.5–5.0;
+  thêm `rating_expertise`/`rating_support`; stats trigger + `avg_expertise`/`avg_support`;
+  view mới) + form chọn purpose với bộ tiêu chí riêng + StarInput/StarRating nửa sao +
+  trang GV tab điểm theo purpose (`?tab=`) + badge purpose/program + fix `course_code`
+  lưu thật + admin `★.repeat` crash. Plan: `docs/superpowers/plans/2026-10-03-dot3-review-purpose-halfstar.md`
 - ⬜ Đợt 4 (chưa làm): comments/saved/tags/attachments/report enum (migration 0019+0020)
 - ⬜ Đợt 5 (chưa làm): P-forum full Reddit-like (migration 0021+0022)
 

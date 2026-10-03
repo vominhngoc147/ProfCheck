@@ -37,20 +37,61 @@ export async function submitReviewAction(
 
   const ratingOverall = Number(formData.get("rating_overall"));
   const ratingDifficulty = Number(formData.get("rating_difficulty"));
-  const ratingFairness = Number(formData.get("rating_fairness"));
+  const ratingFairnessRaw = formData.get("rating_fairness");
+  const ratingFairness =
+    ratingFairnessRaw === null || ratingFairnessRaw === ""
+      ? null
+      : Number(ratingFairnessRaw);
   const ratingClarityRaw = formData.get("rating_clarity");
-  const ratingClarity = ratingClarityRaw ? Number(ratingClarityRaw) : null;
+  const ratingClarity =
+    ratingClarityRaw === null || ratingClarityRaw === ""
+      ? null
+      : Number(ratingClarityRaw);
+  const ratingExpertiseRaw = formData.get("rating_expertise");
+  const ratingExpertise =
+    ratingExpertiseRaw === null || ratingExpertiseRaw === ""
+      ? null
+      : Number(ratingExpertiseRaw);
+  const ratingSupportRaw = formData.get("rating_support");
+  const ratingSupport =
+    ratingSupportRaw === null || ratingSupportRaw === ""
+      ? null
+      : Number(ratingSupportRaw);
   const wouldTakeAgainRaw = formData.get("would_take_again");
   const isAnonymous = formData.get("is_anonymous") === "on";
+  const allowForumReup = formData.get("allow_forum_reup") !== "off";
   const content = String(formData.get("content") ?? "").trim();
+  const courseCodeRaw = String(formData.get("course_code") ?? "").trim();
+  const courseCode = courseCodeRaw ? courseCodeRaw.slice(0, 30) : null;
 
-  if (
-    ![ratingOverall, ratingDifficulty, ratingFairness].every(
-      (n) => Number.isInteger(n) && n >= 1 && n <= 5
-    ) ||
-    (ratingClarity !== null &&
-      !(Number.isInteger(ratingClarity) && ratingClarity >= 1 && ratingClarity <= 5))
+  const purposeRaw = String(formData.get("purpose") ?? "hoc_tap");
+  const purpose = ["hoc_tap", "nckh", "kltn", "ttgk"].includes(purposeRaw)
+    ? purposeRaw
+    : "hoc_tap";
+  const programRaw = String(formData.get("program") ?? "").trim();
+  const program = ["clc", "cttt", "dhnnqt", "chinh_quy", "khac"].includes(
+    programRaw
   )
+    ? programRaw
+    : null;
+
+  // D13: half-star scale 0.5-5.0
+  const isHalf = (n: number | null) =>
+    n !== null &&
+    Number.isFinite(n) &&
+    n >= 0.5 &&
+    n <= 5 &&
+    Math.abs(n * 2 - Math.round(n * 2)) < 1e-9;
+
+  // D15: required criteria per purpose
+  const required: (number | null)[] =
+    purpose === "hoc_tap"
+      ? [ratingOverall, ratingClarity, ratingDifficulty, ratingFairness, ratingExpertise]
+      : purpose === "nckh"
+        ? [ratingOverall, ratingSupport, ratingDifficulty, ratingExpertise]
+        : [ratingOverall, ratingSupport, ratingDifficulty, ratingFairness, ratingExpertise];
+
+  if (!required.every(isHalf))
     return { status: "error", error: "rating_required" };
 
   if (content.length < 30) return { status: "error", error: "content_short" };
@@ -81,10 +122,16 @@ export async function submitReviewAction(
     professor_id: professor.id,
     author_id: user.id,
     is_anonymous: isAnonymous,
+    allow_forum_reup: allowForumReup,
+    purpose,
+    program: program,
+    course_code: courseCode,
     rating_overall: ratingOverall,
     rating_difficulty: ratingDifficulty,
     rating_fairness: ratingFairness,
     rating_clarity: ratingClarity,
+    rating_expertise: ratingExpertise,
+    rating_support: ratingSupport,
     attendance_required: triBool("attendance_required"),
     textbook_used: triBool("textbook_used"),
     for_credit: triBool("for_credit"),

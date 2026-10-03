@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { getDictionary } from "@/i18n";
+import { StarRating } from "@/components/star-rating";
 import {
   moderateReviewAction,
   decideClaimAction,
@@ -126,7 +127,8 @@ export default async function AdminPage() {
                 className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700"
               >
                 <div className="flex items-center gap-2 text-xs text-zinc-500">
-                  <span>{"★".repeat(r.rating_overall)}</span>
+                  <StarRating value={Number(r.rating_overall)} />
+                  <span>{Number(r.rating_overall).toFixed(1)}/5</span>
                   <span>{r.is_anonymous ? dict.professor.anonymousAuthor : ""}</span>
                   {profMap.get(r.professor_id) && (
                     <Link
