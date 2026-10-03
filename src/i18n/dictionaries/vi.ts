@@ -284,6 +284,9 @@ const vi = {
     statusApproved: "Đã đăng",
     statusPending: "Chờ duyệt",
     statusRejected: "Bị từ chối",
+    savedTitle: "Bài đã lưu",
+    savedEmpty: "Chưa lưu bài nào. Nhấn 🔖 ở bất kỳ review nào để lưu vào đây.",
+    savedLink: "Bài đã lưu",
   },
   opp: {
     title: "Cơ hội từ giảng viên",
@@ -319,9 +322,10 @@ const vi = {
     title: "Báo cáo vi phạm",
     reasonLabel: "Lý do",
     reasonSpam: "Spam / quảng cáo",
-    reasonToxic: "Ngôn từ xúc phạm",
-    reasonFalse: "Thông tin sai sự thật",
-    reasonPii: "Tiết lộ thông tin cá nhân",
+    reasonDocHai: "Nội dung độc hại",
+    reasonSaiSuThat: "Sai sự thật",
+    reasonXucPham: "Xúc phạm / công kích cá nhân",
+    reasonKhac: "Khác",
     detailsPlaceholder: "Mô tả thêm (không bắt buộc)...",
     submit: "Gửi báo cáo",
     sent: "Đã gửi báo cáo. Cảm ơn bạn!",
@@ -399,6 +403,33 @@ const vi = {
   },
   professors: {
     all: "Tất cả giảng viên",
+  },
+  comments: {
+    title: "Phản hồi",
+    placeholder: "Viết phản hồi của bạn... (tối đa 2000 ký tự)",
+    submit: "Gửi",
+    anonymous: "Ẩn danh",
+    delete: "Xóa",
+    confirmDelete: "Xóa phản hồi này?",
+    needVerified: "Đăng nhập và xác thực sinh viên để tham gia phản hồi.",
+    anonymousAuthor: "Ẩn danh",
+  },
+  saved: {
+    save: "Lưu",
+    saved: "Đã lưu",
+    loginRequired: "Đăng nhập để lưu bài viết.",
+  },
+  attachments: {
+    imagesLabel: "Ảnh đính kèm",
+    imagesHint: "Tối đa 5 ảnh, mỗi ảnh JPG/PNG/WebP ≤ 5MB.",
+    docsLabel: "Tài liệu môn học",
+    docsHint: "Tối đa 3 file PDF/DOC/PPT, mỗi file ≤ 10MB. Tài liệu được chia sẻ công khai.",
+    docsTitle: "Tài liệu đính kèm",
+  },
+  customTags: {
+    label: "Tag riêng của bạn",
+    placeholder: "VD: dạy dễ ngủ, chấm thoáng (cách nhau bởi dấu phẩy, tối đa 5)",
+    hint: "Tag mới sẽ được gợi ý cho cộng đồng ở các bài sau.",
   },
 };
 

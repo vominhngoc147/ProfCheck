@@ -362,7 +362,13 @@ Tab: (1) review pending, (2) thẻ SV chờ duyệt, (3) reports mở, (4) claim
   view mới) + form chọn purpose với bộ tiêu chí riêng + StarInput/StarRating nửa sao +
   trang GV tab điểm theo purpose (`?tab=`) + badge purpose/program + fix `course_code`
   lưu thật + admin `★.repeat` crash. Plan: `docs/superpowers/plans/2026-10-03-dot3-review-purpose-halfstar.md`
-- ⬜ Đợt 4 (chưa làm): comments/saved/tags/attachments/report enum (migration 0019+0020)
+- ✅ **Đợt 4 (2026-10-03)**: migrations `0019` (`review_comments` + view
+  `public_review_comments` mask ẩn danh, `saved_reviews`, `custom_tags`,
+  `review_attachments`, buckets public `review-images`/`review-docs`) + `0020`
+  (reason report → `doc_hai/sai_su_that/xuc_pham/spam/khac`, map legacy) +
+  actions `social.ts` (comment/save) + form (tag riêng, upload ≤5 ảnh ≤5MB,
+  ≤3 file PDF/DOC/PPT ≤10MB) + thread phản hồi/lưu/gallery trong ReviewCard +
+  trang `/me/saved`. Plan: `docs/superpowers/plans/2026-10-03-dot4-review-social.md`
 - ⬜ Đợt 5 (chưa làm): P-forum full Reddit-like (migration 0021+0022)
 
 ## 7. Việc cần làm tiếp (next actions)

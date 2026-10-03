@@ -46,7 +46,15 @@ export default async function MePage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-2xl font-bold">{dict.me.title}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">{dict.me.title}</h1>
+        <Link
+          href="/me/saved"
+          className="text-sm text-indigo-600 hover:underline dark:text-indigo-400"
+        >
+          📑 {dict.me.savedLink}
+        </Link>
+      </div>
       <div className="mt-6 flex flex-col gap-3">
         {(reviews ?? []).length === 0 && (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">

@@ -6,6 +6,8 @@ import { StarRating, ScoreBadge } from "@/components/star-rating";
 import { Avatar } from "@/components/professor-card";
 import { ReviewForm } from "@/components/review-form";
 import { ReportButton } from "@/components/report-button";
+import { ReviewComments, type CommentItem } from "@/components/review-comments";
+import { SaveReviewButton } from "@/components/save-review-button";
 import type { Dictionary } from "@/i18n";
 
 type PublicReview = {
@@ -88,7 +90,7 @@ export default async function ProfessorPage({
       supabase
         .from("public_reviews")
         .select(
-          "id, rating_overall, rating_difficulty, rating_fairness, rating_clarity, rating_expertise, rating_support, purpose, program, attendance_required, textbook_used, for_credit, would_take_again, is_anonymous, author_name, content, tags, course_code, created_at"
+          "id, rating_overall, rating_difficulty, rating_fairness, rating_clarity, rating_expertise, rating_support, purpose, program, attendance_required, textbook_used, for_credit, would_take_again, is_anonymous, author_name, author_id, content, tags, course_code, created_at"
         )
         .eq("professor_id", professor.id)
         .eq("status", "approved")
@@ -114,6 +116,50 @@ export default async function ProfessorPage({
     (replies ?? []).map((r) => [r.review_id as string, r])
   );
 
+  const reviewIds = (reviews ?? []).map((r) => r.id as string);
+  const [{ data: allComments }, { data: allAttachments }] =
+    reviewIds.length > 0
+      ? await Promise.all([
+          supabase
+            .from("public_review_comments")
+            .select("id, review_id, content, is_anonymous, author_id, author_name, created_at")
+            .in("review_id", reviewIds)
+            .order("created_at", { ascending: true }),
+          supabase
+            .from("review_attachments")
+            .select("id, review_id, file_url, file_type, file_name, file_size")
+            .in("review_id", reviewIds)
+            .order("created_at", { ascending: true }),
+        ])
+      : [{ data: [] }, { data: [] }];
+  type CommentRow = {
+    id: string;
+    review_id: string;
+    content: string;
+    is_anonymous: boolean;
+    author_id: string | null;
+    author_name: string | null;
+    created_at: string;
+  };
+  type AttachmentRow = {
+    id: string;
+    review_id: string;
+    file_url: string;
+    file_type: string;
+    file_name: string;
+    file_size: number;
+  };
+  const commentMap = new Map<string, CommentRow[]>();
+  for (const c of ((allComments ?? []) as unknown as CommentRow[])) {
+    if (!commentMap.has(c.review_id)) commentMap.set(c.review_id, []);
+    commentMap.get(c.review_id)!.push(c);
+  }
+  const attachmentMap = new Map<string, AttachmentRow[]>();
+  for (const a of ((allAttachments ?? []) as unknown as AttachmentRow[])) {
+    if (!attachmentMap.has(a.review_id)) attachmentMap.set(a.review_id, []);
+    attachmentMap.get(a.review_id)!.push(a);
+  }
+
   let verification: string | null = null;
   if (auth?.user) {
     const { data: profile } = await supabase
@@ -128,6 +174,25 @@ export default async function ProfessorPage({
     : verification === "none"
       ? "unverified"
       : "ok";
+
+  const currentUserId = auth?.user?.id ?? null;
+  const canComment = authState === "ok";
+  let savedIds = new Set<string>();
+  let ownCommentIds = new Set<string>();
+  if (currentUserId) {
+    const [{ data: saved }, { data: ownComments }] = await Promise.all([
+      supabase
+        .from("saved_reviews")
+        .select("review_id")
+        .eq("user_id", currentUserId),
+      supabase
+        .from("review_comments")
+        .select("id")
+        .eq("author_id", currentUserId),
+    ]);
+    savedIds = new Set((saved ?? []).map((s) => s.review_id as string));
+    ownCommentIds = new Set((ownComments ?? []).map((c) => c.id as string));
+  }
 
   const reviewList = (reviews ?? []) as PublicReview[];
 
@@ -381,6 +446,13 @@ export default async function ProfessorPage({
             programCttt: dict.search.programCttt,
             programDhnnqt: dict.search.programDhnnqt,
             programChinhQuy: dict.search.programChinhQuy,
+            customTagsLabel: dict.customTags.label,
+            customTagsPlaceholder: dict.customTags.placeholder,
+            customTagsHint: dict.customTags.hint,
+            imagesLabel: dict.attachments.imagesLabel,
+            imagesHint: dict.attachments.imagesHint,
+            docsLabel: dict.attachments.docsLabel,
+            docsHint: dict.attachments.docsHint,
           }}
           wdict={{
             step1: dict.reviewForm.step1,
@@ -479,6 +551,25 @@ export default async function ProfessorPage({
                     locale={locale}
                     displayName={displayName}
                     reply={replyMap.get(review.id)}
+                    comments={(commentMap.get(review.id) ?? []).map((c) => ({
+                      id: c.id,
+                      content: c.content,
+                      is_anonymous: c.is_anonymous,
+                      author_name: c.author_name,
+                      created_at: c.created_at,
+                      mine: ownCommentIds.has(c.id),
+                    }))}
+                    attachments={(attachmentMap.get(review.id) ?? []).map((a) => ({
+                      id: a.id,
+                      file_url: a.file_url,
+                      file_type: a.file_type as "image" | "doc",
+                      file_name: a.file_name,
+                      file_size: a.file_size,
+                    }))}
+                    saved={savedIds.has(review.id)}
+                    loggedIn={!!currentUserId}
+                    canComment={canComment}
+                    professorSlug={professor.slug}
                   />
                 ))}
               </div>
@@ -496,14 +587,34 @@ function ReviewCard({
   locale,
   displayName,
   reply,
+  comments,
+  attachments,
+  saved,
+  loggedIn,
+  canComment,
+  professorSlug,
 }: {
   review: PublicReview;
   dict: Dictionary;
   locale: string;
   displayName: string;
   reply?: { content: string };
+  comments: CommentItem[];
+  attachments: {
+    id: string;
+    file_url: string;
+    file_type: "image" | "doc";
+    file_name: string;
+    file_size: number;
+  }[];
+  saved: boolean;
+  loggedIn: boolean;
+  canComment: boolean;
+  professorSlug: string;
 }) {
   const programLabel = programLabelOf(review.program, dict);
+  const images = attachments.filter((a) => a.file_type === "image");
+  const docs = attachments.filter((a) => a.file_type === "doc");
   return (
     <article className="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
       <div className="flex items-center justify-between gap-3">
@@ -515,9 +626,17 @@ function ReviewCard({
               : review.author_name}
           </span>
         </div>
-        <time className="text-xs text-zinc-500 dark:text-zinc-400">
-          {new Date(review.created_at).toLocaleDateString(locale)}
-        </time>
+        <div className="flex items-center gap-3">
+          <SaveReviewButton
+            reviewId={review.id}
+            initialSaved={saved}
+            loggedIn={loggedIn}
+            dict={dict.saved}
+          />
+          <time className="text-xs text-zinc-500 dark:text-zinc-400">
+            {new Date(review.created_at).toLocaleDateString(locale)}
+          </time>
+        </div>
       </div>
       <p className="mt-2 flex flex-wrap gap-1.5">
         <span className="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
@@ -549,6 +668,58 @@ function ReviewCard({
           ))}
         </p>
       )}
+      {images.length > 0 && (
+        <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
+          {images.map((img) => (
+            <a
+              key={img.id}
+              href={img.file_url}
+              target="_blank"
+              rel="noreferrer"
+              title={img.file_name}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={img.file_url}
+                alt={img.file_name}
+                loading="lazy"
+                className="aspect-square w-full rounded-lg object-cover"
+              />
+            </a>
+          ))}
+        </div>
+      )}
+      {docs.length > 0 && (
+        <div className="mt-3 rounded-xl bg-zinc-50 p-3 dark:bg-zinc-800/60">
+          <p className="mb-1.5 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+            📎 {dict.attachments.docsTitle}
+          </p>
+          <ul className="space-y-1">
+            {docs.map((d) => (
+              <li key={d.id} className="text-xs">
+                <a
+                  href={d.file_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-indigo-600 hover:underline dark:text-indigo-400"
+                >
+                  {d.file_name}
+                </a>
+                <span className="ml-1.5 text-zinc-400">
+                  ({(d.file_size / 1024).toFixed(0)} KB)
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <ReviewComments
+        reviewId={review.id}
+        professorSlug={professorSlug}
+        comments={comments}
+        canComment={canComment}
+        dict={dict.comments}
+      />
       {reply && (
         <blockquote className="mt-3 rounded-r-xl border-l-4 border-indigo-400 bg-zinc-50 py-2 pl-3 pr-2 text-sm dark:bg-zinc-800/60">
           <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">

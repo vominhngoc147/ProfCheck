@@ -118,42 +118,140 @@ export async function submitReviewAction(
   ];
   const needsModeration = suspiciousPatterns.some((p) => p.test(content));
 
-  const { error } = await supabase.from("reviews").insert({
-    professor_id: professor.id,
-    author_id: user.id,
-    is_anonymous: isAnonymous,
-    allow_forum_reup: allowForumReup,
-    purpose,
-    program: program,
-    course_code: courseCode,
-    rating_overall: ratingOverall,
-    rating_difficulty: ratingDifficulty,
-    rating_fairness: ratingFairness,
-    rating_clarity: ratingClarity,
-    rating_expertise: ratingExpertise,
-    rating_support: ratingSupport,
-    attendance_required: triBool("attendance_required"),
-    textbook_used: triBool("textbook_used"),
-    for_credit: triBool("for_credit"),
-    would_take_again:
-      wouldTakeAgainRaw === null ? null : wouldTakeAgainRaw === "yes",
-    content,
-    tags: formData
-      .getAll("tags")
-      .map(String)
-      .filter((t): t is (typeof REVIEW_TAG_KEYS)[number] =>
-        (REVIEW_TAG_KEYS as readonly string[]).includes(t)
-      ),
-    status: needsModeration ? "pending" : "approved",
-  });
+  // Custom quick tags (dot 4): free text, max 5, each <= 30 chars.
+  // Reuse the toxicity pre-filter; suspicious labels are dropped silently.
+  const customTags = String(formData.get("custom_tags") ?? "")
+    .split(",")
+    .map((s) => s.trim().replace(/\s+/g, " ").slice(0, 30))
+    .filter((s) => s.length > 0)
+    .filter(
+      (s) =>
+        !(REVIEW_TAG_KEYS as readonly string[]).includes(s) &&
+        !suspiciousPatterns.some((p) => p.test(s))
+    )
+    .filter((s, i, a) => a.indexOf(s) === i)
+    .slice(0, 5);
 
-  if (error) {
-    if (error.code === "23505") return { status: "error", error: "already_reviewed" };
+  const systemTags = formData
+    .getAll("tags")
+    .map(String)
+    .filter((t): t is (typeof REVIEW_TAG_KEYS)[number] =>
+      (REVIEW_TAG_KEYS as readonly string[]).includes(t)
+    );
+
+  const { data: created, error } = await supabase
+    .from("reviews")
+    .insert({
+      professor_id: professor.id,
+      author_id: user.id,
+      is_anonymous: isAnonymous,
+      allow_forum_reup: allowForumReup,
+      purpose,
+      program: program,
+      course_code: courseCode,
+      rating_overall: ratingOverall,
+      rating_difficulty: ratingDifficulty,
+      rating_fairness: ratingFairness,
+      rating_clarity: ratingClarity,
+      rating_expertise: ratingExpertise,
+      rating_support: ratingSupport,
+      attendance_required: triBool("attendance_required"),
+      textbook_used: triBool("textbook_used"),
+      for_credit: triBool("for_credit"),
+      would_take_again:
+        wouldTakeAgainRaw === null ? null : wouldTakeAgainRaw === "yes",
+      content,
+      tags: [...systemTags, ...customTags],
+      status: needsModeration ? "pending" : "approved",
+    })
+    .select("id")
+    .single();
+
+  if (error || !created) {
+    if (error?.code === "23505")
+      return { status: "error", error: "already_reviewed" };
     return { status: "error", error: "generic" };
   }
 
+  // Register custom tags for community reuse (best-effort).
+  for (const label of customTags) {
+    const { data: existing } = await supabase
+      .from("custom_tags")
+      .select("id, usage_count")
+      .eq("label", label)
+      .maybeSingle();
+    if (!existing) {
+      await supabase
+        .from("custom_tags")
+        .insert({ label, created_by: user.id, usage_count: 1 });
+    } else {
+      await supabase
+        .from("custom_tags")
+        .update({ usage_count: (existing.usage_count ?? 0) + 1 })
+        .eq("id", existing.id);
+    }
+  }
+
+  // Upload attachments (best-effort; review already created).
+  await uploadReviewFiles(supabase, created.id, user.id, formData);
+
   revalidatePath(`/professors/${professorSlug}`);
   return { status: "success", published: !needsModeration };
+}
+
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const DOC_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+];
+
+async function uploadReviewFiles(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  reviewId: string,
+  userId: string,
+  formData: FormData
+) {
+  async function handle(
+    field: string,
+    bucket: string,
+    fileType: "image" | "doc",
+    allowed: string[],
+    maxSize: number,
+    maxCount: number
+  ) {
+    const files = formData
+      .getAll(field)
+      .filter((f): f is File => f instanceof File && f.size > 0)
+      .slice(0, maxCount);
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!allowed.includes(file.type) || file.size > maxSize) continue;
+      const ext = (file.name.split(".").pop() ?? "bin")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "")
+        .slice(0, 5);
+      const path = `${reviewId}/${Date.now()}-${i}.${ext || "bin"}`;
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(path, file, { contentType: file.type });
+      if (uploadError) continue;
+      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      await supabase.from("review_attachments").insert({
+        review_id: reviewId,
+        author_id: userId,
+        file_url: data.publicUrl,
+        file_type: fileType,
+        file_name: file.name.slice(0, 120),
+        file_size: file.size,
+      });
+    }
+  }
+
+  await handle("images", "review-images", "image", IMAGE_TYPES, 5 * 1024 * 1024, 5);
+  await handle("docs", "review-docs", "doc", DOC_TYPES, 10 * 1024 * 1024, 3);
 }
 
 export type SimpleResult = { ok: boolean; error?: string };
@@ -168,7 +266,10 @@ export async function reportReviewAction(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "login_required" };
-  if (!reason) return { ok: false, error: "generic" };
+  if (
+    !["doc_hai", "sai_su_that", "xuc_pham", "spam", "khac"].includes(reason)
+  )
+    return { ok: false, error: "generic" };
 
   const { error } = await supabase.from("reports").insert({
     review_id: reviewId,

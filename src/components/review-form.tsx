@@ -44,6 +44,13 @@ type ReviewDict = {
   professorBlocked: string;
   tagsLabel: string;
   tagLabels: Record<string, string>;
+  customTagsLabel: string;
+  customTagsPlaceholder: string;
+  customTagsHint: string;
+  imagesLabel: string;
+  imagesHint: string;
+  docsLabel: string;
+  docsHint: string;
   clarityRating: string;
   attendanceLabel: string;
   textbookLabel: string;
@@ -423,6 +430,20 @@ export function ReviewForm({
             ))}
           </div>
 
+          <div>
+            <p className="label">{dict.customTagsLabel}</p>
+            <input
+              type="text"
+              name="custom_tags"
+              maxLength={200}
+              placeholder={dict.customTagsPlaceholder}
+              className="input"
+            />
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              {dict.customTagsHint}
+            </p>
+          </div>
+
           <div className="flex justify-between">
             <button type="button" onClick={() => setStep(1)} className="btn-secondary">
               ← {wdict.back}
@@ -451,6 +472,35 @@ export function ReviewForm({
               placeholder={dict.contentPlaceholder}
               className="input resize-y"
             />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="label">{dict.imagesLabel}</p>
+              <input
+                type="file"
+                name="images"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="input"
+              />
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                {dict.imagesHint}
+              </p>
+            </div>
+            <div>
+              <p className="label">{dict.docsLabel}</p>
+              <input
+                type="file"
+                name="docs"
+                accept=".pdf,.doc,.docx,.ppt,.pptx"
+                multiple
+                className="input"
+              />
+              <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                {dict.docsHint}
+              </p>
+            </div>
           </div>
 
           <div className="rounded-xl bg-zinc-50 p-4 dark:bg-zinc-800/60">

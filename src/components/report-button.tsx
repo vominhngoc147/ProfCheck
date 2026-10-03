@@ -8,15 +8,24 @@ type Dict = {
   title: string;
   reasonLabel: string;
   reasonSpam: string;
-  reasonToxic: string;
-  reasonFalse: string;
-  reasonPii: string;
+  reasonDocHai: string;
+  reasonSaiSuThat: string;
+  reasonXucPham: string;
+  reasonKhac: string;
   detailsPlaceholder: string;
   submit: string;
   sent: string;
 };
 
-const REASONS = ["spam", "toxic", "false", "pii"] as const;
+const REASONS = ["doc_hai", "sai_su_that", "xuc_pham", "spam", "khac"] as const;
+
+const REASON_LABEL_KEY = {
+  doc_hai: "reasonDocHai",
+  sai_su_that: "reasonSaiSuThat",
+  xuc_pham: "reasonXucPham",
+  spam: "reasonSpam",
+  khac: "reasonKhac",
+} as const;
 
 export function ReportButton({
   reviewId,
@@ -67,7 +76,7 @@ export function ReportButton({
       {REASONS.map((r) => (
         <label key={r} className="flex items-center gap-1.5 py-0.5 text-xs">
           <input type="radio" name="reason" value={r} required />
-          {dict[`reason${r.charAt(0).toUpperCase() + r.slice(1)}` as keyof Dict] as string}
+          {dict[REASON_LABEL_KEY[r] as keyof Dict] as string}
         </label>
       ))}
       <textarea

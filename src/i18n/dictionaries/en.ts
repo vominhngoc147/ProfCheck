@@ -287,6 +287,9 @@ const en: typeof vi = {
     statusApproved: "Published",
     statusPending: "Pending",
     statusRejected: "Rejected",
+    savedTitle: "Saved reviews",
+    savedEmpty: "Nothing saved yet. Hit 🔖 on any review to save it here.",
+    savedLink: "Saved",
   },
   opp: {
     title: "Opportunities from professors",
@@ -323,9 +326,10 @@ const en: typeof vi = {
     title: "Report review",
     reasonLabel: "Reason",
     reasonSpam: "Spam / advertising",
-    reasonToxic: "Offensive language",
-    reasonFalse: "False information",
-    reasonPii: "Personal information exposed",
+    reasonDocHai: "Harmful content",
+    reasonSaiSuThat: "False information",
+    reasonXucPham: "Harassment / personal attack",
+    reasonKhac: "Other",
     detailsPlaceholder: "More details (optional)...",
     submit: "Submit report",
     sent: "Report sent. Thank you!",
@@ -403,6 +407,33 @@ const en: typeof vi = {
   },
   professors: {
     all: "All professors",
+  },
+  comments: {
+    title: "Replies",
+    placeholder: "Write your reply... (max 2000 characters)",
+    submit: "Send",
+    anonymous: "Anonymous",
+    delete: "Delete",
+    confirmDelete: "Delete this reply?",
+    needVerified: "Log in and verify as a student to join the discussion.",
+    anonymousAuthor: "Anonymous",
+  },
+  saved: {
+    save: "Save",
+    saved: "Saved",
+    loginRequired: "Log in to save posts.",
+  },
+  attachments: {
+    imagesLabel: "Attached images",
+    imagesHint: "Up to 5 images, JPG/PNG/WebP up to 5MB each.",
+    docsLabel: "Course materials",
+    docsHint: "Up to 3 PDF/DOC/PPT files, up to 10MB each. Files are shared publicly.",
+    docsTitle: "Attached materials",
+  },
+  customTags: {
+    label: "Your own tags",
+    placeholder: "e.g. puts me to sleep, generous grader (comma-separated, max 5)",
+    hint: "New tags will be suggested to the community afterwards.",
   },
 };
 
